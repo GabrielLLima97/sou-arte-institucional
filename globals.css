@@ -1,0 +1,52 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Source+Sans+3:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Playfair Display", "Times New Roman", serif;
+  --font-body: "Source Sans 3", "Helvetica Neue", sans-serif;
+  --sand: #f6f1e8;
+  --ink: #1a2732;
+  --brand-coral: #ff6b6b;
+  --brand-coral-dark: #e85b5b;
+  --brand-coral-soft: #ffe3e3;
+  --brand-blue: #1f6dd1;
+  --brand-blue-dark: #1659ae;
+  --brand-blue-soft: #e6f0ff;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 90px;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--sand);
+  color: var(--ink);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Exemplo de customizacao para botoes */
+.btn {
+  @apply px-4 py-2 rounded font-semibold transition-colors;
+}
+.btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700;
+}
+.btn-secondary {
+  @apply bg-gray-600 text-white hover:bg-gray-700;
+}
+.input {
+  @apply border border-gray-300 rounded px-3 py-2;
+}
+.input-bordered {
+  @apply border-2;
+}
+.card {
+  @apply rounded shadow p-4 bg-white;
+}

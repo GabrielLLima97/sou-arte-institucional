@@ -1,0 +1,45 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: souarte
+      MYSQL_USER: souarte
+      MYSQL_PASSWORD: souarte
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: mysql+pymysql://souarte:souarte@db:3306/souarte
+      JWT_SECRET: "troque-esta-chave"
+      CORS_ORIGINS: "http://localhost:3000"
+      ADMIN_EMAIL: "admin@souarte.com"
+      ADMIN_PASSWORD: "admin123"
+      ADMIN_NAME: "Administrador"
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_API_BASE_URL: "http://localhost:8000"
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: "http://localhost:8000"
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  db_data:
