@@ -8,17 +8,32 @@ data_path="./nginx/certbot/conf"
 webroot_path="./nginx/certbot/www"
 staging=0
 
+ensure_writable() {
+  target="$1"
+  if [ -w "$target" ]; then
+    return
+  fi
+  if command -v sudo >/dev/null 2>&1; then
+    sudo chown -R "$(id -u)":"$(id -g)" "$target"
+    return
+  fi
+  echo "Sem permissao para escrever em $target. Execute com sudo."
+  exit 1
+}
+
 if [ -d "$data_path/live/souarteemcuidados.com.br" ]; then
   echo "Certificado existente encontrado. Nada a fazer."
   exit 0
 fi
 
 mkdir -p "$data_path" "$webroot_path"
+ensure_writable "$data_path"
+ensure_writable "$webroot_path"
 
 if [ ! -e "$data_path/options-ssl-nginx.conf" ] || [ ! -e "$data_path/ssl-dhparams.pem" ]; then
   echo "Baixando parametros SSL recomendados..."
-  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/options-ssl-nginx.conf > "$data_path/options-ssl-nginx.conf"
-  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > "$data_path/ssl-dhparams.pem"
+  curl -fsSL https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/options-ssl-nginx.conf > "$data_path/options-ssl-nginx.conf"
+  curl -fsSL https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > "$data_path/ssl-dhparams.pem"
 fi
 
 echo "Criando certificado dummy..."
