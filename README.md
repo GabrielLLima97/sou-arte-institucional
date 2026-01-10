@@ -59,6 +59,25 @@ Para parar:
 docker compose down
 ```
 
+## HTTPS (Let's Encrypt)
+Antes de ativar o HTTPS, aponte o DNS:
+- A: souarteemcuidados.com.br -> IP do servidor
+- A: www -> IP do servidor
+
+Depois execute uma unica vez no servidor:
+```bash
+chmod +x nginx/init-letsencrypt.sh
+./nginx/init-letsencrypt.sh
+```
+
+Isso cria o certificado e recarrega o Nginx.
+
+Renovacao manual:
+```bash
+docker compose run --rm certbot renew
+docker compose exec nginx nginx -s reload
+```
+
 ## Funcionalidades principais
 ### Site institucional
 - Secoes institucionais (sobre, servicos, clientes, cidades, associados, contato)
