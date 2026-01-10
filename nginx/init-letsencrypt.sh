@@ -32,8 +32,24 @@ ensure_writable "$webroot_path"
 
 if [ ! -e "$data_path/options-ssl-nginx.conf" ] || [ ! -e "$data_path/ssl-dhparams.pem" ]; then
   echo "Baixando parametros SSL recomendados..."
-  curl -fsSL https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/options-ssl-nginx.conf > "$data_path/options-ssl-nginx.conf"
-  curl -fsSL https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > "$data_path/ssl-dhparams.pem"
+  options_url="https://raw.githubusercontent.com/certbot/certbot/main/certbot/certbot/options-ssl-nginx.conf"
+  dhparams_url="https://raw.githubusercontent.com/certbot/certbot/main/certbot/certbot/ssl-dhparams.pem"
+
+  if ! curl -fsSL "$options_url" > "$data_path/options-ssl-nginx.conf"; then
+    echo "Falha ao baixar options-ssl-nginx.conf. Usando configuracao minima."
+    cat > "$data_path/options-ssl-nginx.conf" <<'EOF'
+ssl_session_cache shared:le_nginx_SSL:10m;
+ssl_session_timeout 1440m;
+ssl_session_tickets off;
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_prefer_server_ciphers off;
+EOF
+  fi
+
+  if ! curl -fsSL "$dhparams_url" > "$data_path/ssl-dhparams.pem"; then
+    echo "Falha ao baixar ssl-dhparams.pem. Gerando localmente..."
+    openssl dhparam -out "$data_path/ssl-dhparams.pem" 2048
+  fi
 fi
 
 echo "Criando certificado dummy..."
