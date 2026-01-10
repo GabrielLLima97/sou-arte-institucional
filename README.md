@@ -28,6 +28,7 @@ sou-arte-institucional/
 ```
 
 ## Portas locais
+- Nginx (principal): http://localhost
 - Frontend: http://localhost:3000
 - Backend: http://localhost:8000
 - MySQL: localhost:3307 (docker exposto -> 3306 interno)
@@ -48,7 +49,7 @@ Ja configuradas em `docker-compose.yml`:
 
 Recomendado trocar `JWT_SECRET` e `ADMIN_PASSWORD` antes de publicar.
 
-## Subir com Docker
+## Subir com Docker (com Nginx)
 ```bash
 docker compose up -d --build
 ```
@@ -86,6 +87,6 @@ docker compose down
 - partners
 
 ## Observacoes
-- O frontend consome a API via `NEXT_PUBLIC_API_BASE_URL`.
+- O frontend consome a API via `NEXT_PUBLIC_API_BASE_URL` (padrao: `/api`).
+- O Nginx faz o proxy de `/api` para o backend.
 - O backend expõe documentacao em: http://localhost:8000/docs
-
