@@ -71,6 +71,7 @@ chmod +x nginx/init-letsencrypt.sh
 ```
 
 Isso cria o certificado e recarrega o Nginx.
+Se falhar com "connection refused", libere a porta 80/443 no Security Group da EC2.
 
 Renovacao manual:
 ```bash

@@ -55,16 +55,15 @@ fi
 echo "Criando certificado dummy..."
 path="$data_path/live/souarteemcuidados.com.br"
 mkdir -p "$path"
-openssl req -x509 -nodes -newkey rsa:1024 -days 1 \
-  -keyout "$path/privkey.pem" \
-  -out "$path/fullchain.pem" \
-  -subj "/CN=localhost"
+if [ ! -f "$path/fullchain.pem" ] || [ ! -f "$path/privkey.pem" ]; then
+  openssl req -x509 -nodes -newkey rsa:1024 -days 1 \
+    -keyout "$path/privkey.pem" \
+    -out "$path/fullchain.pem" \
+    -subj "/CN=localhost"
+fi
 
 echo "Subindo Nginx..."
 docker compose up -d nginx
-
-echo "Removendo certificado dummy..."
-rm -rf "$path"
 
 domain_args=""
 for domain in $domains; do
