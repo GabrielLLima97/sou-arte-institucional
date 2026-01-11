@@ -2,6 +2,7 @@
 set -eu
 
 domains="souarteemcuidados.com.br www.souarteemcuidados.com.br"
+primary_domain="souarteemcuidados.com.br"
 email="admin@souarteemcuidados.com.br"
 rsa_key_size=4096
 data_path="./nginx/certbot/conf"
@@ -21,9 +22,13 @@ ensure_writable() {
   exit 1
 }
 
-if [ -d "$data_path/live/souarteemcuidados.com.br" ]; then
-  echo "Certificado existente encontrado. Nada a fazer."
-  exit 0
+cert_dir="$data_path/live/$primary_domain"
+if [ -f "$cert_dir/fullchain.pem" ]; then
+  if openssl x509 -in "$cert_dir/fullchain.pem" -noout -issuer 2>/dev/null | grep -qi "Let's Encrypt"; then
+    echo "Certificado Let's Encrypt existente encontrado. Nada a fazer."
+    exit 0
+  fi
+  echo "Certificado existente e provisório. Tentando emitir o certificado valido."
 fi
 
 mkdir -p "$data_path" "$webroot_path"
@@ -53,10 +58,10 @@ EOF
 fi
 
 echo "Criando certificado dummy..."
-path="$data_path/live/souarteemcuidados.com.br"
+path="$data_path/live/$primary_domain"
 mkdir -p "$path"
 if [ ! -f "$path/fullchain.pem" ] || [ ! -f "$path/privkey.pem" ]; then
-  openssl req -x509 -nodes -newkey rsa:1024 -days 1 \
+  openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
     -keyout "$path/privkey.pem" \
     -out "$path/fullchain.pem" \
     -subj "/CN=localhost"
