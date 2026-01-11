@@ -23,11 +23,16 @@ ensure_writable() {
 }
 
 cert_dir="$data_path/live/$primary_domain"
+archive_dir="$data_path/archive/$primary_domain"
+renewal_conf="$data_path/renewal/$primary_domain.conf"
+cleanup_dummy=0
+
 if [ -f "$cert_dir/fullchain.pem" ]; then
   if openssl x509 -in "$cert_dir/fullchain.pem" -noout -issuer 2>/dev/null | grep -qi "Let's Encrypt"; then
     echo "Certificado Let's Encrypt existente encontrado. Nada a fazer."
     exit 0
   fi
+  cleanup_dummy=1
   echo "Certificado existente e provisório. Tentando emitir o certificado valido."
 fi
 
@@ -65,10 +70,16 @@ if [ ! -f "$path/fullchain.pem" ] || [ ! -f "$path/privkey.pem" ]; then
     -keyout "$path/privkey.pem" \
     -out "$path/fullchain.pem" \
     -subj "/CN=localhost"
+  cleanup_dummy=1
 fi
 
 echo "Subindo Nginx..."
 docker compose up -d nginx
+
+if [ "$cleanup_dummy" -eq 1 ]; then
+  echo "Removendo certificado dummy..."
+  rm -rf "$cert_dir" "$archive_dir" "$renewal_conf"
+fi
 
 domain_args=""
 for domain in $domains; do
