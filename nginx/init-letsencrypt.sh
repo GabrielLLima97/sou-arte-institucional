@@ -22,6 +22,22 @@ ensure_writable() {
   exit 1
 }
 
+remove_path() {
+  target="$1"
+  if [ ! -e "$target" ]; then
+    return
+  fi
+  if rm -rf "$target" 2>/dev/null; then
+    return
+  fi
+  if command -v sudo >/dev/null 2>&1; then
+    sudo rm -rf "$target"
+    return
+  fi
+  echo "Sem permissao para remover $target. Execute com sudo."
+  exit 1
+}
+
 cert_dir="$data_path/live/$primary_domain"
 archive_dir="$data_path/archive/$primary_domain"
 renewal_conf="$data_path/renewal/$primary_domain.conf"
@@ -78,7 +94,9 @@ docker compose up -d nginx
 
 if [ "$cleanup_dummy" -eq 1 ]; then
   echo "Removendo certificado dummy..."
-  rm -rf "$cert_dir" "$archive_dir" "$renewal_conf"
+  remove_path "$cert_dir"
+  remove_path "$archive_dir"
+  remove_path "$renewal_conf"
 fi
 
 domain_args=""
