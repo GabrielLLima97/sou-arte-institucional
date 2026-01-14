@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Sou Luz Assessoria",
   description:
     "Gestão, auditoria e consultoria em saúde para clínicas e empreendimentos que buscam eficiência, conformidade e resultados.",
+  icons: {
+    icon: "/souluz/icone.png",
+  },
 };
 
 const services: { title: string; description: string; icon: IconName }[] = [
@@ -56,7 +59,7 @@ export default function SouLuzAssessoriaPage() {
               className="h-16 w-auto drop-shadow-[0_6px_16px_rgba(0,0,0,0.35)] sm:h-20"
             />
           </a>
-          <nav className="hidden items-center gap-5 text-base font-bold uppercase tracking-[0.25em] text-white/90 lg:flex">
+          <nav className="hidden items-center gap-5 text-sm font-semibold uppercase tracking-[0.25em] text-white/90 lg:flex">
             <a href="#servicos" className="transition hover:text-white">
               Serviços
             </a>
@@ -71,7 +74,7 @@ export default function SouLuzAssessoriaPage() {
             href={whatsappHref}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-[#0f2c4c]/30 px-4 py-2 text-base font-bold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-[#0f2c4c]/45"
+            className="inline-flex items-center gap-2 rounded-full bg-[#0f2c4c]/30 px-4 py-2 text-sm font-semibold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-[#0f2c4c]/45"
           >
             <Icon name="whatsapp" className="h-5 w-5" />
             WhatsApp

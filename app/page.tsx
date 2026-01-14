@@ -253,7 +253,7 @@ export default function HomePage() {
           className="pointer-events-none absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#e2ecff] blur-[120px] opacity-60"
         />
 
-        <section id="inicio" className="mx-auto max-w-screen-xl px-6 pb-10 pt-32">
+        <section id="inicio" className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 pb-10 pt-32">
           <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
             <div className="lg:col-span-7 space-y-7">
               <div className="space-y-5">
@@ -308,7 +308,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-screen-xl px-6 py-8" id="sobre">
+        <section className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 py-8" id="sobre">
           <div className="grid gap-10 lg:grid-cols-12">
             <div className="lg:col-span-7 space-y-5">
               <div className="space-y-3">
@@ -358,7 +358,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-screen-xl px-6 py-8" id="servicos">
+        <section className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 py-8" id="servicos">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="space-y-3">
               <div className="text-lg font-bold uppercase tracking-[0.32em] text-[#1f6dd1]">Serviços</div>
@@ -407,7 +407,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-screen-xl px-6 py-8" id="clientes">
+        <section className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 py-8" id="clientes">
           <div className="space-y-3">
             <div className="text-lg font-bold uppercase tracking-[0.32em] text-[#ff6b6b]">Nossos clientes</div>
             <h2 className="font-[var(--font-display)] text-3xl font-bold tracking-tight text-[#1a2732] sm:text-4xl">
@@ -443,7 +443,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-screen-xl px-6 py-8" id="cidades">
+        <section className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 py-8" id="cidades">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="space-y-3">
               <div className="text-lg font-bold uppercase tracking-[0.32em] text-[#1f6dd1]">Presença Sou Arte</div>
@@ -540,7 +540,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-screen-xl px-6 py-8" id="associados">
+        <section className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 py-8" id="associados">
           <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
             <div className="lg:col-span-7 space-y-4">
               <div className="text-lg font-bold uppercase tracking-[0.32em] text-[#ff6b6b]">Associados</div>
@@ -594,7 +594,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-screen-xl px-6 py-8" id="contato">
+        <section className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 py-8" id="contato">
           <div className="grid gap-10 lg:grid-cols-12">
             <div className="lg:col-span-5 space-y-5">
               <div className="space-y-3">
@@ -1015,7 +1015,7 @@ export default function HomePage() {
         </Modal>
 
         <footer className="border-t border-[#ead7c6] bg-white/70 backdrop-blur-2xl">
-          <div className="mx-auto max-w-screen-xl px-6 py-12">
+          <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid gap-10 lg:grid-cols-12">
               <div className="lg:col-span-4 space-y-5">
                 <div className="flex items-center gap-4">

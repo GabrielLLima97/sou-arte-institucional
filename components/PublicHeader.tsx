@@ -3,7 +3,7 @@ import { Icon } from "./Icons";
 export function PublicHeader() {
   return (
     <div className="fixed inset-x-0 top-0 z-40 border-b border-white/30 bg-white/45 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_8px_30px_rgba(31,109,209,0.08)]">
-      <div className="mx-auto max-w-screen-xl px-5 sm:px-8">
+      <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
         <header className="flex items-center justify-between gap-6 py-1.5">
           <a href="#inicio" className="flex items-center">
             <img

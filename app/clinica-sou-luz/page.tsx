@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Clínica Sou Luz",
   description:
     "Clínica de reabilitação multiprofissional com atendimento hospitalar, ambulatorial e domiciliar. Equipe integrada para cada etapa da vida.",
+  icons: {
+    icon: "/souluz/icone.png",
+  },
 };
 
 const services: { title: string; description: string; icon: IconName }[] = [
@@ -105,7 +108,7 @@ export default function ClinicaSouLuzPage() {
               className="h-16 w-auto sm:h-20"
             />
           </a>
-          <nav className="hidden items-center gap-5 text-base font-bold uppercase tracking-[0.25em] text-[#1a2732] lg:flex">
+          <nav className="hidden items-center gap-5 text-sm font-semibold uppercase tracking-[0.25em] text-[#1a2732] lg:flex">
             <a href="#servicos" className="transition hover:text-[#1e6f78]">
               Serviços
             </a>
@@ -126,7 +129,7 @@ export default function ClinicaSouLuzPage() {
             href={whatsappContacts[0].href}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-[#1e6f78] px-4 py-2 text-base font-bold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-[#165a61]"
+            className="inline-flex items-center gap-2 rounded-full bg-[#1e6f78] px-4 py-2 text-sm font-semibold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-[#165a61]"
           >
             <Icon name="whatsapp" className="h-5 w-5" />
             WhatsApp
@@ -238,8 +241,8 @@ export default function ClinicaSouLuzPage() {
                   </div>
                   <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 text-center">
                     <img
-                      src="/souluz/icone.png"
-                      alt="Ícone Sou Luz"
+                      src="/souluz/icone-aba.png"
+                      alt="Ícone do Núcleo ABA"
                       className="-translate-x-4 h-44 w-auto transition duration-500 group-hover:-translate-y-2 group-hover:scale-105"
                     />
                     <img
