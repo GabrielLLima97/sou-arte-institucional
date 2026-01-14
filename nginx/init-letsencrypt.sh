@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-domains="souarteemcuidados.com.br www.souarteemcuidados.com.br"
+domains="souarteemcuidados.com.br www.souarteemcuidados.com.br clinicasouluz.com.br www.clinicasouluz.com.br souluzassessoria.com.br www.souluzassessoria.com.br"
 primary_domain="souarteemcuidados.com.br"
 email="admin@souarteemcuidados.com.br"
 rsa_key_size=4096
@@ -42,14 +42,27 @@ cert_dir="$data_path/live/$primary_domain"
 archive_dir="$data_path/archive/$primary_domain"
 renewal_conf="$data_path/renewal/$primary_domain.conf"
 cleanup_dummy=0
+needs_expand=0
 
 if [ -f "$cert_dir/fullchain.pem" ]; then
-  if openssl x509 -in "$cert_dir/fullchain.pem" -noout -issuer 2>/dev/null | grep -qi "Let's Encrypt"; then
-    echo "Certificado Let's Encrypt existente encontrado. Nada a fazer."
-    exit 0
+  cert_info="$(openssl x509 -in "$cert_dir/fullchain.pem" -noout -text 2>/dev/null || true)"
+  if echo "$cert_info" | grep -qi "Let's Encrypt"; then
+    missing_domains=""
+    for domain in $domains; do
+      if ! echo "$cert_info" | grep -q "DNS:$domain"; then
+        missing_domains="$missing_domains $domain"
+      fi
+    done
+    if [ -z "$missing_domains" ]; then
+      echo "Certificado Let's Encrypt existente encontrado. Nada a fazer."
+      exit 0
+    fi
+    needs_expand=1
+    echo "Certificado Let's Encrypt existente, mas faltam dominios:$missing_domains"
+  else
+    cleanup_dummy=1
+    echo "Certificado existente e provisório. Tentando emitir o certificado valido."
   fi
-  cleanup_dummy=1
-  echo "Certificado existente e provisório. Tentando emitir o certificado valido."
 fi
 
 mkdir -p "$data_path" "$webroot_path"
@@ -115,11 +128,16 @@ if [ "$staging" != "0" ]; then
 fi
 
 echo "Solicitando certificado Let's Encrypt..."
+expand_arg=""
+if [ "$needs_expand" -eq 1 ]; then
+  expand_arg="--expand --cert-name $primary_domain"
+fi
 docker compose run --rm certbot certonly \
   --webroot -w /var/www/certbot \
   $staging_arg \
   $email_arg \
   $domain_args \
+  $expand_arg \
   --rsa-key-size $rsa_key_size \
   --agree-tos \
   --force-renewal

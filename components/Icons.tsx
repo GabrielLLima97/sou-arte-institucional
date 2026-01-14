@@ -15,7 +15,12 @@ export type IconName =
   | "network"
   | "building"
   | "check"
+  | "clock"
+  | "ear"
+  | "hand"
+  | "pin"
   | "whatsapp"
+  | "instagram"
   | "mail";
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
@@ -144,6 +149,46 @@ export function Icon({ name, className }: { name: IconName; className?: string }
       return (
         <svg className={cls} viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <path d="M5 12l4 4L19 7" />
+        </svg>
+      );
+    case "clock":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="8" />
+          <path d="M12 8v4l3 2" />
+        </svg>
+      );
+    case "ear":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 6a5 5 0 0 1 5 5c0 3-2 4-2 6a3 3 0 0 1-3 3" />
+          <path d="M9 14a2 2 0 0 0 4 0" />
+          <path d="M9 10a3 3 0 0 1 6 0" />
+        </svg>
+      );
+    case "hand":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 11V6a1 1 0 0 1 2 0v5" />
+          <path d="M10 11V5a1 1 0 0 1 2 0v6" />
+          <path d="M12 11V6a1 1 0 0 1 2 0v6" />
+          <path d="M14 11V7a1 1 0 0 1 2 0v6" />
+          <path d="M8 11v4a4 4 0 0 0 4 4h2a4 4 0 0 0 4-4v-1" />
+        </svg>
+      );
+    case "pin":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s7-7 7-12a7 7 0 1 0-14 0c0 5 7 12 7 12z" />
+          <circle cx="12" cy="10" r="2.5" />
+        </svg>
+      );
+    case "instagram":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="4" y="4" width="16" height="16" rx="4" />
+          <circle cx="12" cy="12" r="3.5" />
+          <circle cx="17" cy="7" r="1" />
         </svg>
       );
     case "mail":
