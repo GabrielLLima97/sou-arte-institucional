@@ -242,25 +242,25 @@ export default function HomePage() {
       <div className="relative isolate overflow-hidden">
         <div
           aria-hidden
-          className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#e6f0ff] blur-3xl opacity-80"
+          className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#e6f0ff] blur-3xl opacity-80 -z-10"
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute right-0 top-20 h-80 w-80 rounded-full bg-[#ffe1de] blur-3xl opacity-70"
+          className="pointer-events-none absolute right-0 top-20 h-80 w-80 rounded-full bg-[#ffe1de] blur-3xl opacity-70 -z-10"
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#e2ecff] blur-[120px] opacity-60"
+          className="pointer-events-none absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#e2ecff] blur-[120px] opacity-60 -z-10"
         />
 
-        <section id="inicio" className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 pb-10 pt-32">
+        <section id="inicio" className="relative z-10 mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 pb-10 pt-32">
           <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
             <div className="lg:col-span-7 space-y-7">
               <div className="space-y-5">
-                <h1 className="font-[var(--font-display)] text-4xl font-bold leading-tight tracking-tight text-[#1a2732] sm:text-5xl lg:text-6xl">
+                <h1 className="font-[var(--font-display)] text-4xl font-bold leading-tight tracking-tight text-[#0f1111] sm:text-5xl lg:text-6xl">
                   Sou Arte em Cuidados: Onde a Ciência e a Sensibilidade se Encontram
                 </h1>
-                <p className="text-lg leading-relaxed text-[#344454]">
+                <p className="text-lg leading-relaxed text-[#0f1111]">
                   Empresa multinacional em cuidados com a saúde, unindo enfermagem, nutrição, farmácia, biomedicina,
                   psicologia e outras especialidades para oferecer suporte hospitalar, domiciliar, administrativo e
                   educacional.

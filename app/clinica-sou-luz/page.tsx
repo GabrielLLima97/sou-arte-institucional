@@ -169,27 +169,64 @@ export default function ClinicaSouLuzPage() {
                 </a>
               </div>
             </div>
-            <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white/80 p-6 shadow-[0_20px_60px_rgba(31,109,209,0.15)] transition hover:-translate-y-1 hover:border-[#1e6f78]/35 hover:bg-white hover:shadow-[0_24px_65px_rgba(31,109,209,0.2)]">
-              <div className="text-base font-bold uppercase tracking-[0.3em] text-[#1e6f78]">Atendimento via WhatsApp</div>
-              <div className="mt-4 space-y-3">
-                {whatsappContacts.map((contact) => (
-                  <a
-                    key={contact.label}
-                    href={contact.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-between rounded-2xl border border-[#f6a63b]/40 bg-[#fff7ea] px-4 py-3 text-sm font-semibold text-[#1a2732] transition hover:-translate-y-0.5 hover:border-[#f6a63b]"
-                  >
-                    <span>{contact.label}</span>
-                    <Icon name="whatsapp" className="h-5 w-5 text-[#1e6f78]" />
-                  </a>
-                ))}
+            <div className="group relative w-full max-w-md overflow-hidden rounded-3xl border border-white/70 bg-white/85 p-6 shadow-[0_20px_60px_rgba(31,109,209,0.15)] transition hover:-translate-y-1 hover:border-[#1e6f78]/35 hover:bg-white hover:shadow-[0_24px_65px_rgba(31,109,209,0.22)]">
+              <div className="absolute -right-12 -top-10 h-28 w-28 rounded-full bg-[#1e6f78]/20 blur-2xl" />
+              <div className="absolute -left-12 bottom-0 h-32 w-32 rounded-full bg-[#f6a63b]/25 blur-2xl" />
+              <div className="relative z-10">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#1e6f78]/15 text-[#1e6f78] shadow-sm">
+                      <Icon name="whatsapp" className="h-6 w-6" />
+                    </span>
+                    <div>
+                      <div className="text-base font-bold uppercase tracking-[0.3em] text-[#1e6f78]">
+                        Atendimento via WhatsApp
+                      </div>
+                      <p className="mt-1 text-xs font-medium text-[#48605e]">Resposta rápida e acolhedora.</p>
+                    </div>
+                  </div>
+                  <span className="hidden items-center gap-2 rounded-full bg-[#1e6f78]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-[#1e6f78] sm:inline-flex">
+                    <span className="h-2 w-2 rounded-full bg-[#1e6f78]" />
+                    Online
+                  </span>
+                </div>
+                <div className="mt-4 grid gap-3">
+                  {whatsappContacts.map((contact) => (
+                    <a
+                      key={contact.label}
+                      href={contact.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group flex items-center justify-between rounded-2xl border border-[#1e6f78]/20 bg-white/90 px-4 py-3 text-sm font-semibold text-[#1a2732] transition hover:-translate-y-0.5 hover:border-[#1e6f78]/40 hover:bg-white hover:shadow-[0_12px_30px_rgba(30,111,120,0.2)]"
+                    >
+                      <span>{contact.label}</span>
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1e6f78]/10 text-[#1e6f78] transition group-hover:bg-[#1e6f78] group-hover:text-white">
+                        <Icon name="whatsapp" className="h-5 w-5" />
+                      </span>
+                    </a>
+                  ))}
+                </div>
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-[#f6a63b]/35 bg-[#fff7ea] p-4 text-sm text-[#2b4a48]">
+                    <div className="flex items-start gap-3">
+                      <span className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#f6a63b]">
+                        <Icon name="check" className="h-4 w-4" />
+                      </span>
+                      <p>
+                        Em parceria com o SINJUR, oferecemos desconto de 15% a 20% para conveniados e convênio com outras
+                        operadoras de saúde.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-[#f05d5e]/35 bg-[#fff1f1] p-4">
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#f05d5e]">
+                      <Icon name="heart" className="h-4 w-4" />
+                      Inspiração
+                    </div>
+                    <p className="mt-2 text-sm font-semibold text-[#5c3a3a]">Mateus 5:14 e 16</p>
+                  </div>
+                </div>
               </div>
-              <div className="mt-6 rounded-2xl border border-[#1e6f78]/20 bg-[#eef7f6] p-4 text-sm text-[#2b4a48]">
-                Em parceria com o SINJUR, oferecemos desconto de 15% a 20% para conveniados e convênio com outras operadoras de
-                saúde.
-              </div>
-              <div className="mt-4 text-base font-bold uppercase tracking-[0.3em] text-[#f05d5e]">Mateus 5:14 e 16</div>
             </div>
           </div>
         </section>
@@ -222,13 +259,37 @@ export default function ClinicaSouLuzPage() {
         </section>
 
         <section id="nucleo-aba" className="mx-auto w-full max-w-screen-2xl px-3 py-10 sm:px-5 lg:px-8">
-          <div className="relative overflow-hidden rounded-[36px] border border-white/80 bg-gradient-to-br from-[#e7f6ff] via-[#fff1f1] to-[#fff8dd] p-6 shadow-[0_20px_50px_rgba(10,134,196,0.2)] sm:p-8">
+          <div className="relative overflow-hidden rounded-[36px] border border-white/80 bg-gradient-to-br from-[#e7f6ff] via-[#fff1f1] to-[#fff8dd] p-5 shadow-[0_20px_50px_rgba(10,134,196,0.2)] sm:p-8">
             <div className="absolute -left-16 -top-16 h-40 w-40 rounded-full bg-[#0A86C4]/20 blur-3xl" />
             <div className="absolute -right-10 top-12 h-32 w-32 rounded-full bg-[#39B7A5]/25 blur-3xl" />
             <div className="absolute bottom-0 right-0 h-40 w-40 rounded-full bg-[#FFD54A]/30 blur-3xl" />
-            <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="relative z-10">
-                <div className="group relative h-full min-h-[420px] overflow-hidden rounded-[36px] border border-white/80 bg-gradient-to-br from-[#0A86C4]/25 via-[#FFD54A]/25 to-[#E94B4B]/20 p-6 shadow-[0_24px_55px_rgba(10,134,196,0.25)] transition hover:-translate-y-1 hover:shadow-[0_28px_65px_rgba(10,134,196,0.3)]">
+            <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-8">
+              <div className="relative z-10 w-full min-w-0">
+                <div className="group relative w-full min-w-0 overflow-hidden rounded-[32px] border border-white/80 bg-gradient-to-br from-[#0A86C4]/25 via-[#FFD54A]/25 to-[#E94B4B]/20 p-5 shadow-[0_22px_48px_rgba(10,134,196,0.22)] transition hover:-translate-y-1 hover:shadow-[0_26px_55px_rgba(10,134,196,0.28)] sm:hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#39B7A5]/30 via-transparent to-[#FFD54A]/30 opacity-0 transition duration-500 group-hover:opacity-100" />
+                  <div className="absolute left-4 top-4 flex h-8 w-8 items-center justify-center rounded-2xl bg-white/90 text-[#0A86C4] shadow-[0_10px_25px_rgba(10,134,196,0.2)]">
+                    <Icon name="brain" className="h-4 w-4" />
+                  </div>
+                  <div className="absolute right-4 top-16 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[#E94B4B] shadow-[0_10px_25px_rgba(233,75,75,0.2)]">
+                    <Icon name="heart" className="h-3 w-3" />
+                  </div>
+                  <div className="absolute bottom-4 left-4 flex h-8 w-8 items-center justify-center rounded-2xl bg-white/90 text-[#39B7A5] shadow-[0_10px_25px_rgba(57,183,165,0.2)]">
+                    <Icon name="hand" className="h-4 w-4" />
+                  </div>
+                  <div className="relative z-10 flex w-full flex-col items-center justify-center gap-4 text-center">
+                    <img
+                      src="/souluz/icone-aba.png"
+                      alt="Ícone do Núcleo ABA"
+                      className="mx-auto h-auto w-[150px] max-w-full -translate-x-2.5 transition duration-500 group-hover:-translate-y-2 group-hover:scale-105"
+                    />
+                    <img
+                      src="/souluz/logo-aba.png"
+                      alt="Logo do Núcleo ABA"
+                      className="h-auto w-[220px] max-w-full transition duration-500 group-hover:translate-y-2 group-hover:scale-105 mx-auto"
+                    />
+                  </div>
+                </div>
+                <div className="group relative hidden h-full min-h-[360px] overflow-hidden rounded-[36px] border border-white/80 bg-gradient-to-br from-[#0A86C4]/25 via-[#FFD54A]/25 to-[#E94B4B]/20 p-6 shadow-[0_24px_55px_rgba(10,134,196,0.25)] transition hover:-translate-y-1 hover:shadow-[0_28px_65px_rgba(10,134,196,0.3)] sm:block lg:min-h-[420px]">
                   <div className="absolute inset-0 bg-gradient-to-br from-[#39B7A5]/30 via-transparent to-[#FFD54A]/30 opacity-0 transition duration-500 group-hover:opacity-100" />
                   <div className="absolute left-6 top-6 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/90 text-[#0A86C4] shadow-[0_10px_25px_rgba(10,134,196,0.2)]">
                     <Icon name="brain" className="h-5 w-5" />
@@ -253,12 +314,14 @@ export default function ClinicaSouLuzPage() {
                   </div>
                 </div>
               </div>
-              <div className="relative z-10">
-                <div className="text-base font-bold uppercase tracking-[0.35em] text-[#0A86C4]">Núcleo ABA Sou Luz</div>
-                <h2 className="mt-3 font-[var(--font-display)] text-3xl font-extrabold text-[#1a2732] sm:text-4xl">
+              <div className="relative z-10 w-full min-w-0">
+                <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#0A86C4] sm:text-base sm:tracking-[0.35em]">
+                  Núcleo ABA Sou Luz
+                </div>
+                <h2 className="mt-3 font-[var(--font-display)] text-2xl font-extrabold leading-tight text-[#1a2732] sm:text-3xl lg:text-4xl break-words">
                   Terapias infantis com foco em autonomia e possibilidades
                 </h2>
-                <p className="mt-4 text-[#2b4a48]">
+                <p className="mt-4 text-[#2b4a48] break-words">
                   Clínica especializada em autismo (TEA) com abordagem ABA, unindo ciência, acolhimento e intervenções
                   personalizadas para cada pequeno universo.
                 </p>
@@ -273,9 +336,11 @@ export default function ClinicaSouLuzPage() {
                     “Construindo um mundo de possibilidades para cada pequeno universo”
                   </span>
                 </div>
-                <div className="mt-6 grid gap-4 lg:grid-cols-2">
-                  <div className="group rounded-3xl border border-white/80 bg-white/85 p-4 shadow-sm transition hover:-translate-y-1 hover:border-[#0A86C4]/30 hover:bg-white hover:shadow-[0_16px_35px_rgba(10,134,196,0.18)]">
-                    <div className="text-base font-bold uppercase tracking-[0.3em] text-[#0A86C4]">Planos de saúde</div>
+                <div className="mt-6 grid min-w-0 gap-4 lg:grid-cols-2">
+                  <div className="group w-full min-w-0 rounded-3xl border border-white/80 bg-white/85 p-4 shadow-sm transition hover:-translate-y-1 hover:border-[#0A86C4]/30 hover:bg-white hover:shadow-[0_16px_35px_rgba(10,134,196,0.18)]">
+                    <div className="text-sm font-bold uppercase tracking-[0.2em] text-[#0A86C4] sm:text-base sm:tracking-[0.3em]">
+                      Planos de saúde
+                    </div>
                     <div className="relative mt-4 overflow-hidden">
                       <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white/90 to-transparent" />
                       <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white/90 to-transparent" />
@@ -312,8 +377,8 @@ export default function ClinicaSouLuzPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="group rounded-3xl border border-white/80 bg-white/85 p-4 shadow-sm transition hover:-translate-y-1 hover:border-[#39B7A5]/35 hover:bg-white hover:shadow-[0_16px_35px_rgba(57,183,165,0.2)]">
-                    <div className="text-base font-bold uppercase tracking-[0.3em] text-[#E94B4B]">
+                  <div className="group w-full min-w-0 rounded-3xl border border-white/80 bg-white/85 p-4 shadow-sm transition hover:-translate-y-1 hover:border-[#39B7A5]/35 hover:bg-white hover:shadow-[0_16px_35px_rgba(57,183,165,0.2)]">
+                    <div className="text-sm font-bold uppercase tracking-[0.2em] text-[#E94B4B] sm:text-base sm:tracking-[0.3em] break-words">
                       Atendimento psicopedagógico
                     </div>
                     <ul className="mt-3 space-y-2 text-sm text-[#2b4a48]">
@@ -454,36 +519,52 @@ export default function ClinicaSouLuzPage() {
                 </div>
               </div>
             </div>
-            <div className="rounded-3xl border border-white/70 bg-[#1e6f78] p-6 text-white shadow-[0_20px_45px_rgba(30,111,120,0.35)] transition hover:-translate-y-1 hover:bg-[#1a6670] hover:shadow-[0_26px_55px_rgba(30,111,120,0.45)]">
-              <div className="text-base font-bold uppercase tracking-[0.35em] text-white/70">Contato imediato</div>
-              <h3 className="mt-3 font-[var(--font-display)] text-3xl font-extrabold">Estamos prontos para cuidar de você</h3>
-              <p className="mt-4 text-sm text-white/85">
-                Fale conosco pelo WhatsApp e receba orientação sobre atendimentos, convênios e disponibilidade de horários.
-              </p>
-              <div className="mt-6 space-y-3">
-                {whatsappContacts.map((contact) => (
+            <div className="group relative overflow-hidden rounded-3xl border border-white/70 bg-[#1e6f78] p-6 text-white shadow-[0_20px_45px_rgba(30,111,120,0.35)] transition hover:-translate-y-1 hover:bg-[#1a6670] hover:shadow-[0_26px_55px_rgba(30,111,120,0.45)]">
+              <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/15 blur-2xl" />
+              <div className="absolute -left-12 bottom-0 h-32 w-32 rounded-full bg-[#0f4f56]/40 blur-2xl" />
+              <div className="relative z-10">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <div className="text-base font-bold uppercase tracking-[0.35em] text-white/70">Contato imediato</div>
+                    <h3 className="mt-3 font-[var(--font-display)] text-3xl font-extrabold">
+                      Estamos prontos para cuidar de você
+                    </h3>
+                  </div>
+                  <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-white/80">
+                    <span className="h-2 w-2 rounded-full bg-[#f6a63b]" />
+                    WhatsApp disponível
+                  </span>
+                </div>
+                <p className="mt-4 text-sm text-white/85">
+                  Fale conosco pelo WhatsApp e receba orientação sobre atendimentos, convênios e disponibilidade de horários.
+                </p>
+                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  {whatsappContacts.map((contact) => (
+                    <a
+                      key={contact.label}
+                      href={contact.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group flex items-center justify-between rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-white/20 hover:shadow-[0_12px_25px_rgba(0,0,0,0.15)]"
+                    >
+                      <span>{contact.label}</span>
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition group-hover:bg-white group-hover:text-[#1e6f78]">
+                        <Icon name="whatsapp" className="h-5 w-5" />
+                      </span>
+                    </a>
+                  ))}
+                </div>
+                <div className="mt-5 flex flex-wrap items-center gap-3">
                   <a
-                    key={contact.label}
-                    href={contact.href}
+                    href="https://www.instagram.com/clinica_souluz"
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-between rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-white/20"
+                    className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-base font-bold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-white hover:text-[#1e6f78]"
                   >
-                    <span>{contact.label}</span>
-                    <Icon name="whatsapp" className="h-6 w-6 text-white" />
+                    <Icon name="instagram" className="h-5 w-5" />
+                    Instagram
                   </a>
-                ))}
-              </div>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <a
-                  href="https://www.instagram.com/clinica_souluz"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-base font-bold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-white/25"
-                >
-                  <Icon name="instagram" className="h-5 w-5" />
-                  Instagram
-                </a>
+                </div>
               </div>
             </div>
           </div>
