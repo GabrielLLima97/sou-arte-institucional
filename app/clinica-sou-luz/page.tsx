@@ -169,7 +169,7 @@ export default function ClinicaSouLuzPage() {
                 </a>
               </div>
             </div>
-            <div className="group relative w-full max-w-md overflow-hidden rounded-3xl border border-white/70 bg-white/85 p-6 shadow-[0_20px_60px_rgba(31,109,209,0.15)] transition hover:-translate-y-1 hover:border-[#1e6f78]/35 hover:bg-white hover:shadow-[0_24px_65px_rgba(31,109,209,0.22)]">
+            <div className="group relative w-full max-w-none overflow-hidden rounded-3xl border border-white/70 bg-white/85 p-6 shadow-[0_20px_60px_rgba(31,109,209,0.15)] transition hover:-translate-y-1 hover:border-[#1e6f78]/35 hover:bg-white hover:shadow-[0_24px_65px_rgba(31,109,209,0.22)]">
               <div className="absolute -right-12 -top-10 h-28 w-28 rounded-full bg-[#1e6f78]/20 blur-2xl" />
               <div className="absolute -left-12 bottom-0 h-32 w-32 rounded-full bg-[#f6a63b]/25 blur-2xl" />
               <div className="relative z-10">
@@ -190,7 +190,7 @@ export default function ClinicaSouLuzPage() {
                     Online
                   </span>
                 </div>
-                <div className="mt-4 grid gap-3">
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   {whatsappContacts.map((contact) => (
                     <a
                       key={contact.label}
@@ -223,7 +223,8 @@ export default function ClinicaSouLuzPage() {
                       <Icon name="heart" className="h-4 w-4" />
                       Inspiração
                     </div>
-                    <p className="mt-2 text-sm font-semibold text-[#5c3a3a]">Mateus 5:14 e 16</p>
+                    <p className="mt-2 text-sm font-semibold text-[#5c3a3a]">Vós sois a luz do mundo</p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#f05d5e]">Mateus 5:14</p>
                   </div>
                 </div>
               </div>
