@@ -10,46 +10,54 @@ export const metadata: Metadata = {
   },
 };
 
-const services: { title: string; description: string; icon: IconName }[] = [
+const services: { title: string; description: string; icon: IconName; image: string }[] = [
   {
     title: "Fonoaudiologia",
     description: "Avaliação e terapias para comunicação, fala, voz e deglutição.",
     icon: "chat",
+    image: "/clinica/servicos/fonoaudiologia.png",
   },
   {
     title: "Fisioterapia",
     description: "Reabilitação e prevenção funcional com planos personalizados.",
     icon: "heart",
+    image: "/clinica/servicos/fisioterapia.png",
   },
   {
     title: "Nutrição",
     description: "Acompanhamento nutricional para saúde e qualidade de vida.",
     icon: "leaf",
+    image: "/clinica/servicos/nutricao.png",
   },
   {
     title: "Terapia Ocupacional",
     description: "Autonomia e desempenho nas atividades do dia a dia.",
     icon: "hand",
+    image: "/clinica/servicos/terapia-ocupacional.png",
   },
   {
     title: "Psicopedagogia",
     description: "Apoio ao desenvolvimento e aos processos de aprendizagem.",
     icon: "graduation",
+    image: "/clinica/servicos/psicopedagogia.png",
   },
   {
     title: "Psicologia",
     description: "Cuidado emocional com atendimento humanizado e sigiloso.",
     icon: "brain",
+    image: "/clinica/servicos/psicologia.png",
   },
   {
     title: "Clínica Médica",
     description: "Avaliação clínica ampla e direcionamentos em saúde.",
     icon: "stethoscope",
+    image: "/clinica/servicos/clinica-medica.png",
   },
   {
     title: "Exames Audiológicos",
     description: "Diagnóstico completo para saúde auditiva.",
     icon: "ear",
+    image: "/clinica/servicos/exames-audiologicos.png",
   },
 ];
 
@@ -97,6 +105,36 @@ const abaPlans = [
 const abaCare = ["Avaliação psicopedagógica", "Intervenção psicopedagógica"];
 
 export default function ClinicaSouLuzPage() {
+  const clinicStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "MedicalClinic",
+    name: "Clínica Sou Luz",
+    description:
+      "Clínica de reabilitação multiprofissional com atendimento hospitalar, ambulatorial e domiciliar (Home Care).",
+    url: "https://clinicasouluz.com.br",
+    image: "https://clinicasouluz.com.br/souluz/logo-retangular.png",
+    telephone: ["+55-69-99957-9773", "+55-69-99933-6717"],
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Av. Amazonas, n.º 4000",
+      addressLocality: "Porto Velho",
+      addressRegion: "RO",
+      addressCountry: "BR",
+    },
+    areaServed: "BR",
+    medicalSpecialty: [
+      "Fonoaudiologia",
+      "Fisioterapia",
+      "Nutrição",
+      "Psicologia",
+      "Terapia Ocupacional",
+      "Psicopedagogia",
+      "Clínica Médica",
+      "Exames Audiológicos",
+    ],
+    sameAs: ["https://www.instagram.com/clinica_souluz"],
+  };
+
   return (
     <div className="bg-[#f6f1e8] text-[#1a2732]">
       <div className="fixed inset-x-0 top-0 z-40 border-b border-white/35 bg-gradient-to-r from-[#1e6f78]/30 via-white/70 to-[#1e6f78]/20 backdrop-blur-2xl shadow-[0_10px_30px_rgba(30,111,120,0.18)]">
@@ -138,6 +176,7 @@ export default function ClinicaSouLuzPage() {
       </div>
 
       <main className="pt-20">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(clinicStructuredData) }} />
         <section id="inicio" className="relative overflow-hidden">
           <div className="absolute -left-24 top-10 h-56 w-56 rounded-full bg-[#f6a63b]/30 blur-3xl" />
           <div className="absolute right-10 top-0 h-72 w-72 rounded-full bg-[#1e6f78]/20 blur-3xl" />
@@ -247,13 +286,24 @@ export default function ClinicaSouLuzPage() {
             {services.map((service) => (
               <div
                 key={service.title}
-                className="rounded-3xl border border-white/70 bg-white/85 p-5 shadow-[0_16px_40px_rgba(31,109,209,0.12)] transition hover:-translate-y-1 hover:border-[#1e6f78]/35 hover:bg-white hover:shadow-[0_20px_45px_rgba(31,109,209,0.18)]"
+                className="group overflow-hidden rounded-3xl border border-white/70 bg-white/85 p-4 shadow-[0_16px_40px_rgba(31,109,209,0.12)] transition hover:-translate-y-1 hover:border-[#1e6f78]/35 hover:bg-white hover:shadow-[0_20px_45px_rgba(31,109,209,0.18)]"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f6a63b]/15 text-[#1e6f78]">
-                  <Icon name={service.icon} className="h-6 w-6" />
+                <div className="relative h-36 overflow-hidden rounded-2xl sm:h-40">
+                  <img
+                    src={service.image}
+                    alt={service.title}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#102a28]/70 via-transparent to-transparent opacity-80 transition group-hover:opacity-60" />
+                  <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/90 text-[#1e6f78] shadow-sm">
+                      <Icon name={service.icon} className="h-5 w-5" />
+                    </span>
+                    <span className="text-sm font-semibold uppercase tracking-[0.2em] text-white">{service.title}</span>
+                  </div>
                 </div>
-                <h3 className="mt-4 text-lg font-bold text-[#1a2732]">{service.title}</h3>
-                <p className="mt-2 text-sm text-[#3a5250]">{service.description}</p>
+                <p className="mt-4 text-sm text-[#3a5250]">{service.description}</p>
               </div>
             ))}
           </div>

@@ -48,6 +48,25 @@ const outcomes = [
 const whatsappHref = "https://wa.me/5569999220012";
 
 export default function SouLuzAssessoriaPage() {
+  const assessoriaStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    name: "Sou Luz Assessoria",
+    description:
+      "Gestão, auditoria e consultoria em saúde para clínicas, consultórios e instituições que buscam eficiência e resultados.",
+    url: "https://souluzassessoria.com.br",
+    image: "https://souluzassessoria.com.br/souluz/logo-retangular.png",
+    telephone: "+55-69-99922-0012",
+    areaServed: "BR",
+    serviceType: [
+      "Gestão em Saúde",
+      "Assessoria em Saúde",
+      "Consultoria em Credenciamento Médico",
+      "Faturamento Médico/Hospitalar",
+      "Auditoria em Saúde",
+    ],
+  };
+
   return (
     <div className="bg-[#f6f1e8] text-[#0f2c4c]">
       <div className="fixed inset-x-0 top-0 z-40 border-b border-[#1a5fb8] bg-[#1f6dd1] shadow-[0_12px_30px_rgba(31,109,209,0.45)]">
@@ -83,6 +102,7 @@ export default function SouLuzAssessoriaPage() {
       </div>
 
       <main className="pt-20">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(assessoriaStructuredData) }} />
         <section id="inicio" className="relative overflow-hidden">
           <div className="absolute -left-20 top-16 h-56 w-56 rounded-full bg-[#1f6dd1]/20 blur-3xl" />
           <div className="absolute right-10 top-0 h-72 w-72 rounded-full bg-[#1f6dd1]/15 blur-3xl" />
