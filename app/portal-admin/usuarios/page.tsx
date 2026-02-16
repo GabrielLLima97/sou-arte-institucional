@@ -710,14 +710,16 @@ export default function PortalAdminUsuariosPage() {
         eyebrow="Pega Plantão"
         iconName="info"
         tone="primary"
+        widthClassName="max-w-6xl"
+        bodyClassName="overflow-hidden"
         onClose={() => {
           setPreviewModalOpen(false);
           setApplyError(null);
         }}
       >
         {importPreview && (
-          <div className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex max-h-[calc(100dvh-14rem)] flex-col gap-4 sm:max-h-[calc(100dvh-16rem)]">
+            <div className="grid flex-none gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-2xl border border-[#1f6dd1]/20 bg-[#f2f6ff] p-3">
                 <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1f6dd1]">Linhas lidas</div>
                 <div className="mt-1 text-lg font-bold text-[#1a2732]">{importPreview.processed}</div>
@@ -736,7 +738,7 @@ export default function PortalAdminUsuariosPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[#e5d6c5] bg-white/90 p-4">
+            <div className="flex-none rounded-2xl border border-[#e5d6c5] bg-white/90 p-4">
               <div className="text-xs font-semibold uppercase tracking-[0.25em] text-[#1f6dd1]">Aplicar importação</div>
               <div className="mt-3 grid gap-2 text-sm text-[#2f4050]">
                 <label className="inline-flex items-center gap-2">
@@ -786,7 +788,7 @@ export default function PortalAdminUsuariosPage() {
               )}
             </div>
 
-            <div className="inline-flex flex-wrap items-center gap-2 rounded-full border border-[#1f6dd1]/20 bg-[#f2f6ff] p-1">
+            <div className="flex-none inline-flex flex-wrap items-center gap-2 rounded-full border border-[#1f6dd1]/20 bg-[#f2f6ff] p-1">
               <button
                 type="button"
                 onClick={() => setPreviewTab("novos")}
@@ -825,7 +827,7 @@ export default function PortalAdminUsuariosPage() {
               </button>
             </div>
 
-            <div className="max-h-[52vh] overflow-auto rounded-2xl border border-[#e5d6c5] bg-white/90">
+            <div className="min-h-0 flex-1 overflow-auto rounded-2xl border border-[#e5d6c5] bg-white/90">
               {previewTab === "novos" && (
                 <table className="min-w-full text-left text-sm">
                   <thead className="sticky top-0 bg-white text-[10px] uppercase tracking-[0.2em] text-[#1f6dd1]">
@@ -978,7 +980,7 @@ export default function PortalAdminUsuariosPage() {
             </div>
 
             {importPreview.errors.length > 0 && (
-              <div className="rounded-2xl border border-[#ff6b6b]/25 bg-[#ffecec] px-3 py-2 text-xs text-[#b94444]">
+              <div className="flex-none rounded-2xl border border-[#ff6b6b]/25 bg-[#ffecec] px-3 py-2 text-xs text-[#b94444]">
                 <div className="font-semibold uppercase tracking-[0.2em]">Inconsistências encontradas</div>
                 <div className="mt-2 space-y-1">
                   {importPreview.errors.slice(0, 8).map((item) => (

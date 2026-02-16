@@ -11,6 +11,8 @@ type ModalProps = {
   eyebrow?: string;
   iconName?: ModalIconName;
   tone?: ModalTone;
+  widthClassName?: string;
+  bodyClassName?: string;
   onClose: () => void;
   children: ReactNode;
 };
@@ -71,7 +73,17 @@ const TONE_STYLES: Record<ModalTone, { accent: string; border: string; button: s
   },
 };
 
-export function Modal({ open, title, eyebrow, iconName = "info", tone = "primary", onClose, children }: ModalProps) {
+export function Modal({
+  open,
+  title,
+  eyebrow,
+  iconName = "info",
+  tone = "primary",
+  widthClassName = "max-w-2xl",
+  bodyClassName = "",
+  onClose,
+  children,
+}: ModalProps) {
   useEffect(() => {
     if (!open) {
       return;
@@ -95,37 +107,41 @@ export function Modal({ open, title, eyebrow, iconName = "info", tone = "primary
   const icon = ICONS[iconName] ?? ICONS.info;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto">
       <button
         type="button"
         aria-label="Fechar modal"
         onClick={onClose}
-        className="absolute inset-0 bg-[#1a2732]/60 backdrop-blur-sm"
+        className="fixed inset-0 bg-[#1a2732]/60 backdrop-blur-sm"
       />
-      <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl border border-white/80 bg-white/95 shadow-2xl">
-        <div className={`border-b border-white/70 bg-gradient-to-r ${styles.glow} px-6 py-5`}>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className={`flex h-11 w-11 items-center justify-center rounded-2xl border ${styles.border} ${styles.iconBg} ${styles.accent}`}>
-                {icon}
+      <div className="relative z-10 flex min-h-full items-start justify-center px-3 py-3 sm:px-4 sm:py-6">
+        <div
+          className={`relative z-10 flex w-full ${widthClassName} max-h-[calc(100dvh-1.5rem)] flex-col overflow-hidden rounded-3xl border border-white/80 bg-white/95 shadow-2xl sm:max-h-[calc(100dvh-3rem)]`}
+        >
+          <div className={`border-b border-white/70 bg-gradient-to-r ${styles.glow} px-6 py-5`}>
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className={`flex h-11 w-11 items-center justify-center rounded-2xl border ${styles.border} ${styles.iconBg} ${styles.accent}`}>
+                  {icon}
+                </div>
+                <div>
+                  {eyebrow && (
+                    <div className={`text-xs font-semibold uppercase tracking-[0.35em] ${styles.accent}`}>{eyebrow}</div>
+                  )}
+                  {title ? <h3 className="text-2xl font-bold text-[#1a2732]">{title}</h3> : <span />}
+                </div>
               </div>
-              <div>
-                {eyebrow && (
-                  <div className={`text-xs font-semibold uppercase tracking-[0.35em] ${styles.accent}`}>{eyebrow}</div>
-                )}
-                {title ? <h3 className="text-2xl font-bold text-[#1a2732]">{title}</h3> : <span />}
-              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] transition ${styles.button}`}
+              >
+                Fechar
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] transition ${styles.button}`}
-            >
-              Fechar
-            </button>
           </div>
+          <div className={`overflow-y-auto px-6 pb-6 pt-5 text-sm leading-relaxed text-[#3b4b5a] ${bodyClassName}`}>{children}</div>
         </div>
-        <div className="px-6 pb-6 pt-5 text-sm leading-relaxed text-[#3b4b5a]">{children}</div>
       </div>
     </div>
   );

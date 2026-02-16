@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import { PortalShell } from "../../../components/portal/PortalShell";
 import { Modal } from "../../../components/portal/Modal";
+import { MultiOptionChecklist } from "../../../components/portal/MultiOptionChecklist";
 import { apiFetch } from "../../../lib/api";
+import {
+  buildAudienceOptions,
+  DEFAULT_CITY_OPTIONS,
+  DEFAULT_PROFESSION_OPTIONS,
+} from "../../../lib/audience-options";
 import type { Partner, User } from "../../../lib/types";
 
 const NAV_LINKS = [
@@ -22,14 +28,6 @@ type BenefitPayload = {
   target_cities: string[];
   target_professions: string[];
 };
-
-const toMultiSelectValues = (event: React.ChangeEvent<HTMLSelectElement>) =>
-  Array.from(event.target.selectedOptions, (option) => option.value);
-
-const uniqueOptions = (values: Array<string | null>) =>
-  Array.from(new Set(values.map((value) => (value ?? "").trim()).filter(Boolean))).sort((a, b) =>
-    a.localeCompare(b, "pt-BR"),
-  );
 
 export default function PortalAdminBeneficiosPage() {
   const [partners, setPartners] = useState<Partner[]>([]);
@@ -58,11 +56,13 @@ export default function PortalAdminBeneficiosPage() {
   const loadAudienceOptions = async () => {
     try {
       const users = await apiFetch<User[]>("/admin/users");
-      setCityOptions(uniqueOptions(users.map((user) => user.city)));
-      setProfessionOptions(uniqueOptions(users.map((user) => user.profession)));
+      setCityOptions(buildAudienceOptions(users.map((user) => user.city), DEFAULT_CITY_OPTIONS));
+      setProfessionOptions(
+        buildAudienceOptions(users.map((user) => user.profession), DEFAULT_PROFESSION_OPTIONS),
+      );
     } catch {
-      setCityOptions([]);
-      setProfessionOptions([]);
+      setCityOptions(DEFAULT_CITY_OPTIONS);
+      setProfessionOptions(DEFAULT_PROFESSION_OPTIONS);
     }
   };
 
@@ -176,38 +176,22 @@ export default function PortalAdminBeneficiosPage() {
           </div>
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="text-sm font-semibold text-[#2f4050]">
-              Cidades visíveis (opcional)
-              <select
-                multiple
-                value={form.target_cities}
-                onChange={(event) => setForm({ ...form, target_cities: toMultiSelectValues(event) })}
-                className="mt-2 min-h-[120px] w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
-              >
-                {cityOptions.map((city) => (
-                  <option key={city} value={city}>
-                    {city}
-                  </option>
-                ))}
-              </select>
-              <span className="mt-1 block text-xs font-medium text-[#8a98a5]">Sem seleção: todas as cidades.</span>
-            </label>
-            <label className="text-sm font-semibold text-[#2f4050]">
-              Profissões visíveis (opcional)
-              <select
-                multiple
-                value={form.target_professions}
-                onChange={(event) => setForm({ ...form, target_professions: toMultiSelectValues(event) })}
-                className="mt-2 min-h-[120px] w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
-              >
-                {professionOptions.map((profession) => (
-                  <option key={profession} value={profession}>
-                    {profession}
-                  </option>
-                ))}
-              </select>
-              <span className="mt-1 block text-xs font-medium text-[#8a98a5]">Sem seleção: todas as profissões.</span>
-            </label>
+            <MultiOptionChecklist
+              label="Cidades visíveis (opcional)"
+              options={cityOptions}
+              selected={form.target_cities}
+              onChange={(next) => setForm({ ...form, target_cities: next })}
+              helperText="Sem seleção: todas as cidades."
+              emptyText="Cadastre usuários com cidade para listar opções."
+            />
+            <MultiOptionChecklist
+              label="Profissões visíveis (opcional)"
+              options={professionOptions}
+              selected={form.target_professions}
+              onChange={(next) => setForm({ ...form, target_professions: next })}
+              helperText="Sem seleção: todas as profissões."
+              emptyText="Cadastre usuários com profissão para listar opções."
+            />
           </div>
 
           <label className="mt-4 text-sm font-semibold text-[#2f4050]">
@@ -334,38 +318,22 @@ export default function PortalAdminBeneficiosPage() {
             </label>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <label className="text-sm font-semibold text-[#2f4050]">
-                Cidades visíveis (opcional)
-                <select
-                  multiple
-                  value={editing.target_cities}
-                  onChange={(event) => setEditing({ ...editing, target_cities: toMultiSelectValues(event) })}
-                  className="mt-2 min-h-[120px] w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
-                >
-                  {cityOptions.map((city) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="text-sm font-semibold text-[#2f4050]">
-                Profissões visíveis (opcional)
-                <select
-                  multiple
-                  value={editing.target_professions}
-                  onChange={(event) =>
-                    setEditing({ ...editing, target_professions: toMultiSelectValues(event) })
-                  }
-                  className="mt-2 min-h-[120px] w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
-                >
-                  {professionOptions.map((profession) => (
-                    <option key={profession} value={profession}>
-                      {profession}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <MultiOptionChecklist
+                label="Cidades visíveis (opcional)"
+                options={cityOptions}
+                selected={editing.target_cities}
+                onChange={(next) => setEditing({ ...editing, target_cities: next })}
+                helperText="Sem seleção: todas as cidades."
+                emptyText="Cadastre usuários com cidade para listar opções."
+              />
+              <MultiOptionChecklist
+                label="Profissões visíveis (opcional)"
+                options={professionOptions}
+                selected={editing.target_professions}
+                onChange={(next) => setEditing({ ...editing, target_professions: next })}
+                helperText="Sem seleção: todas as profissões."
+                emptyText="Cadastre usuários com profissão para listar opções."
+              />
             </div>
 
             <label className="text-sm font-semibold text-[#2f4050]">
