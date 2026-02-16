@@ -38,6 +38,7 @@ services:
       ADMIN_EMAIL: "admin@souarte.com"
       ADMIN_PASSWORD: "admin123"
       ADMIN_NAME: "Administrador"
+      IMPORT_USER_DEFAULT_PASSWORD: "123456"
     depends_on:
       - db
     ports:

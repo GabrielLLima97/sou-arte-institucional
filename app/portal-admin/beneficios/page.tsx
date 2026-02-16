@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { PortalShell } from "../../../components/portal/PortalShell";
 import { Modal } from "../../../components/portal/Modal";
 import { apiFetch } from "../../../lib/api";
-import type { Partner } from "../../../lib/types";
+import type { Partner, User } from "../../../lib/types";
 
 const NAV_LINKS = [
   { label: "Dashboard", href: "/portal-admin" },
@@ -19,15 +19,29 @@ type BenefitPayload = {
   description: string;
   link_url: string;
   logo_url: string;
+  target_cities: string[];
+  target_professions: string[];
 };
+
+const toMultiSelectValues = (event: React.ChangeEvent<HTMLSelectElement>) =>
+  Array.from(event.target.selectedOptions, (option) => option.value);
+
+const uniqueOptions = (values: Array<string | null>) =>
+  Array.from(new Set(values.map((value) => (value ?? "").trim()).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b, "pt-BR"),
+  );
 
 export default function PortalAdminBeneficiosPage() {
   const [partners, setPartners] = useState<Partner[]>([]);
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [professionOptions, setProfessionOptions] = useState<string[]>([]);
   const [form, setForm] = useState<BenefitPayload>({
     name: "",
     description: "",
     link_url: "",
     logo_url: "",
+    target_cities: [],
+    target_professions: [],
   });
   const [editing, setEditing] = useState<Partner | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,13 +50,25 @@ export default function PortalAdminBeneficiosPage() {
     try {
       const data = await apiFetch<Partner[]>("/admin/partners");
       setPartners(data);
-    } catch (err) {
+    } catch {
       setPartners([]);
+    }
+  };
+
+  const loadAudienceOptions = async () => {
+    try {
+      const users = await apiFetch<User[]>("/admin/users");
+      setCityOptions(uniqueOptions(users.map((user) => user.city)));
+      setProfessionOptions(uniqueOptions(users.map((user) => user.profession)));
+    } catch {
+      setCityOptions([]);
+      setProfessionOptions([]);
     }
   };
 
   useEffect(() => {
     loadPartners();
+    loadAudienceOptions();
   }, []);
 
   const handleCreate = async (event: React.FormEvent) => {
@@ -54,7 +80,14 @@ export default function PortalAdminBeneficiosPage() {
         method: "POST",
         body: JSON.stringify(form),
       });
-      setForm({ name: "", description: "", link_url: "", logo_url: "" });
+      setForm({
+        name: "",
+        description: "",
+        link_url: "",
+        logo_url: "",
+        target_cities: [],
+        target_professions: [],
+      });
       await loadPartners();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao cadastrar benefício.";
@@ -75,6 +108,8 @@ export default function PortalAdminBeneficiosPage() {
           description: editing.description,
           link_url: editing.link_url,
           logo_url: editing.logo_url ?? "",
+          target_cities: editing.target_cities,
+          target_professions: editing.target_professions,
         }),
       });
       setEditing(null);
@@ -139,6 +174,42 @@ export default function PortalAdminBeneficiosPage() {
               />
             </label>
           </div>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <label className="text-sm font-semibold text-[#2f4050]">
+              Cidades visíveis (opcional)
+              <select
+                multiple
+                value={form.target_cities}
+                onChange={(event) => setForm({ ...form, target_cities: toMultiSelectValues(event) })}
+                className="mt-2 min-h-[120px] w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+              >
+                {cityOptions.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+              <span className="mt-1 block text-xs font-medium text-[#8a98a5]">Sem seleção: todas as cidades.</span>
+            </label>
+            <label className="text-sm font-semibold text-[#2f4050]">
+              Profissões visíveis (opcional)
+              <select
+                multiple
+                value={form.target_professions}
+                onChange={(event) => setForm({ ...form, target_professions: toMultiSelectValues(event) })}
+                className="mt-2 min-h-[120px] w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+              >
+                {professionOptions.map((profession) => (
+                  <option key={profession} value={profession}>
+                    {profession}
+                  </option>
+                ))}
+              </select>
+              <span className="mt-1 block text-xs font-medium text-[#8a98a5]">Sem seleção: todas as profissões.</span>
+            </label>
+          </div>
+
           <label className="mt-4 text-sm font-semibold text-[#2f4050]">
             Descrição do benefício
             <textarea
@@ -172,6 +243,26 @@ export default function PortalAdminBeneficiosPage() {
                   <div>
                     <div className="text-lg font-semibold text-[#1a2732]">{partner.name}</div>
                     <p className="mt-2 text-sm text-[#5b6b78]">{partner.description}</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {partner.target_cities.length === 0 ? (
+                        <span className="rounded-full bg-[#f2f6ff] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1f6dd1]">
+                          Todas as cidades
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-[#f2f6ff] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1f6dd1]">
+                          Cidades: {partner.target_cities.join(", ")}
+                        </span>
+                      )}
+                      {partner.target_professions.length === 0 ? (
+                        <span className="rounded-full bg-[#fff7ea] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b8741e]">
+                          Todas as profissões
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-[#fff7ea] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b8741e]">
+                          Profissões: {partner.target_professions.join(", ")}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -241,6 +332,42 @@ export default function PortalAdminBeneficiosPage() {
                 className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
               />
             </label>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="text-sm font-semibold text-[#2f4050]">
+                Cidades visíveis (opcional)
+                <select
+                  multiple
+                  value={editing.target_cities}
+                  onChange={(event) => setEditing({ ...editing, target_cities: toMultiSelectValues(event) })}
+                  className="mt-2 min-h-[120px] w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+                >
+                  {cityOptions.map((city) => (
+                    <option key={city} value={city}>
+                      {city}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-semibold text-[#2f4050]">
+                Profissões visíveis (opcional)
+                <select
+                  multiple
+                  value={editing.target_professions}
+                  onChange={(event) =>
+                    setEditing({ ...editing, target_professions: toMultiSelectValues(event) })
+                  }
+                  className="mt-2 min-h-[120px] w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+                >
+                  {professionOptions.map((profession) => (
+                    <option key={profession} value={profession}>
+                      {profession}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
             <label className="text-sm font-semibold text-[#2f4050]">
               Descrição do benefício
               <textarea

@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     admin_email: str = "admin@souarte.com"
     admin_password: str = "admin123"
     admin_name: str = "Administrador"
+    import_user_default_password: str = "123456"
 
 
 @lru_cache

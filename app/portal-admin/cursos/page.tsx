@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { PortalShell } from "../../../components/portal/PortalShell";
 import { Modal } from "../../../components/portal/Modal";
 import { apiFetch } from "../../../lib/api";
-import type { Course } from "../../../lib/types";
+import type { Course, User } from "../../../lib/types";
 
 const NAV_LINKS = [
   { label: "Dashboard", href: "/portal-admin" },
@@ -19,15 +19,28 @@ type CoursePayload = {
   description: string;
   image_url: string;
   access_url: string;
+  target_cities: string[];
+  target_professions: string[];
 };
+
+const toMultiSelectValues = (event: React.ChangeEvent<HTMLSelectElement>) =>
+  Array.from(event.target.selectedOptions, (option) => option.value);
+
+const uniqueOptions = (values: Array<string | null>) =>
+  Array.from(new Set(values.map((value) => (value ?? "").trim()).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b, "pt-BR"),
+  );
 
 export default function PortalAdminCursosPage() {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [professionOptions, setProfessionOptions] = useState<string[]>([]);
   const [form, setForm] = useState<CoursePayload>({
     title: "",
     description: "",
     image_url: "",
     access_url: "",
+    target_cities: [],
+    target_professions: [],
   });
   const [editing, setEditing] = useState<Course | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,13 +49,23 @@ export default function PortalAdminCursosPage() {
     try {
       const data = await apiFetch<Course[]>("/admin/courses");
       setCourses(data);
-    } catch (err) {
+    } catch {
       setCourses([]);
+    }
+  };
+
+  const loadAudienceOptions = async () => {
+    try {
+      const users = await apiFetch<User[]>("/admin/users");
+      setProfessionOptions(uniqueOptions(users.map((user) => user.profession)));
+    } catch {
+      setProfessionOptions([]);
     }
   };
 
   useEffect(() => {
     loadCourses();
+    loadAudienceOptions();
   }, []);
 
   const handleCreate = async (event: React.FormEvent) => {
@@ -54,7 +77,14 @@ export default function PortalAdminCursosPage() {
         method: "POST",
         body: JSON.stringify(form),
       });
-      setForm({ title: "", description: "", image_url: "", access_url: "" });
+      setForm({
+        title: "",
+        description: "",
+        image_url: "",
+        access_url: "",
+        target_cities: [],
+        target_professions: [],
+      });
       await loadCourses();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao criar curso.";
@@ -75,6 +105,8 @@ export default function PortalAdminCursosPage() {
           description: editing.description,
           image_url: editing.image_url ?? "",
           access_url: editing.access_url,
+          target_cities: editing.target_cities,
+          target_professions: editing.target_professions,
         }),
       });
       setEditing(null);
@@ -139,6 +171,26 @@ export default function PortalAdminCursosPage() {
               />
             </label>
           </div>
+
+          <div className="mt-4">
+            <label className="text-sm font-semibold text-[#2f4050]">
+              Profissões visíveis (opcional)
+              <select
+                multiple
+                value={form.target_professions}
+                onChange={(event) => setForm({ ...form, target_professions: toMultiSelectValues(event) })}
+                className="mt-2 min-h-[120px] w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+              >
+                {professionOptions.map((profession) => (
+                  <option key={profession} value={profession}>
+                    {profession}
+                  </option>
+                ))}
+              </select>
+              <span className="mt-1 block text-xs font-medium text-[#8a98a5]">Sem seleção: curso liberado para todas as profissões.</span>
+            </label>
+          </div>
+
           {form.image_url && (
             <div className="mt-4 overflow-hidden rounded-2xl border border-white/70 bg-white/80">
               <div className="relative">
@@ -203,6 +255,17 @@ export default function PortalAdminCursosPage() {
                   <div>
                     <div className="text-lg font-semibold text-[#1a2732]">{course.title}</div>
                     <p className="mt-2 text-sm text-[#5b6b78]">{course.description}</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {course.target_professions.length === 0 ? (
+                        <span className="rounded-full bg-[#fff7ea] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b8741e]">
+                          Todas as profissões
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-[#fff7ea] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b8741e]">
+                          Profissões: {course.target_professions.join(", ")}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -278,6 +341,27 @@ export default function PortalAdminCursosPage() {
                 </div>
               </div>
             )}
+
+            <div>
+              <label className="text-sm font-semibold text-[#2f4050]">
+                Profissões visíveis (opcional)
+                <select
+                  multiple
+                  value={editing.target_professions}
+                  onChange={(event) =>
+                    setEditing({ ...editing, target_professions: toMultiSelectValues(event) })
+                  }
+                  className="mt-2 min-h-[120px] w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+                >
+                  {professionOptions.map((profession) => (
+                    <option key={profession} value={profession}>
+                      {profession}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
             <label className="text-sm font-semibold text-[#2f4050]">
               Descrição
               <textarea

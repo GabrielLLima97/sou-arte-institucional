@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text, func
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, String, Text, func
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -13,6 +13,10 @@ class User(Base):
     email = Column(String(160), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     role = Column(String(20), nullable=False)
+    city = Column(String(120), nullable=True)
+    uf = Column(String(2), nullable=True)
+    admission_date = Column(Date, nullable=True)
+    profession = Column(String(120), nullable=True)
     active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
@@ -30,6 +34,8 @@ class Announcement(Base):
     body = Column(Text, nullable=False)
     published_at = Column(DateTime, nullable=False)
     expires_at = Column(DateTime, nullable=True)
+    target_cities = Column(Text, nullable=True)
+    target_professions = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
@@ -50,6 +56,8 @@ class Course(Base):
     description = Column(Text, nullable=False)
     image_url = Column(String(500), nullable=True)
     access_url = Column(String(500), nullable=False)
+    target_cities = Column(Text, nullable=True)
+    target_professions = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
@@ -80,6 +88,8 @@ class Partner(Base):
     description = Column(Text, nullable=False)
     link_url = Column(String(500), nullable=False)
     logo_url = Column(String(500), nullable=True)
+    target_cities = Column(Text, nullable=True)
+    target_professions = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)

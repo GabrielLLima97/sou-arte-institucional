@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Icon, type IconName } from "../../components/Icons";
+import { AppointmentForm } from "../../components/clinica/AppointmentForm";
 
 export const metadata: Metadata = {
   title: "Clínica Sou Luz",
@@ -159,6 +160,9 @@ export default function ClinicaSouLuzPage() {
             <a href="#atendimento" className="transition hover:text-[#1e6f78]">
               Atendimento
             </a>
+            <a href="#agendamento" className="transition hover:text-[#1e6f78]">
+              Agendamento
+            </a>
             <a href="#contato" className="transition hover:text-[#1e6f78]">
               Contato
             </a>
@@ -192,12 +196,10 @@ export default function ClinicaSouLuzPage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
-                  href={whatsappContacts[0].href}
-                  target="_blank"
-                  rel="noreferrer"
+                  href="#agendamento"
                   className="inline-flex items-center gap-2 rounded-full bg-[#f6a63b] px-5 py-3 text-base font-bold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-[#e8932f]"
                 >
-                  <Icon name="whatsapp" className="h-6 w-6" />
+                  <Icon name="calendar" className="h-6 w-6" />
                   Agendar atendimento
                 </a>
                 <a
@@ -284,8 +286,9 @@ export default function ClinicaSouLuzPage() {
           </div>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {services.map((service) => (
-              <div
+              <a
                 key={service.title}
+                href={`?especialista=${encodeURIComponent(service.title)}#agendamento`}
                 className="group overflow-hidden rounded-3xl border border-white/70 bg-white/85 p-4 shadow-[0_16px_40px_rgba(31,109,209,0.12)] transition hover:-translate-y-1 hover:border-[#1e6f78]/35 hover:bg-white hover:shadow-[0_20px_45px_rgba(31,109,209,0.18)]"
               >
                 <div className="relative h-36 overflow-hidden rounded-2xl sm:h-40">
@@ -304,9 +307,17 @@ export default function ClinicaSouLuzPage() {
                   </div>
                 </div>
                 <p className="mt-4 text-sm text-[#3a5250]">{service.description}</p>
-              </div>
+                <div className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] text-[#1e6f78]">
+                  <Icon name="calendar" className="h-4 w-4" />
+                  Ir para agendamento
+                </div>
+              </a>
             ))}
           </div>
+        </section>
+
+        <section id="agendamento" className="mx-auto w-full max-w-screen-2xl px-3 py-10 sm:px-5 lg:px-8">
+          <AppointmentForm specialists={services.map((service) => service.title)} whatsappNumber="5569999579773" />
         </section>
 
         <section id="nucleo-aba" className="mx-auto w-full max-w-screen-2xl px-3 py-10 sm:px-5 lg:px-8">

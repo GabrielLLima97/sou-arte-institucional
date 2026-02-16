@@ -337,17 +337,16 @@ export default function PortalSocioHomePage() {
           </PortalCard>
 
           <PortalCard
-            badge={<Badge label="Descontos" tone="muted" icon={ICONS.descontos} />}
+            badge={<Badge label="Descontos" tone="primary" icon={ICONS.descontos} />}
             title="Descontos em parceiros"
             description="Benefícios exclusivos para associados em parceiros selecionados."
-            className="border-[#e5e7eb] bg-white/80 opacity-70 hover:translate-y-0 hover:border-[#e5e7eb] hover:shadow-none"
           >
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#d6dde3] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#8a98a5]">
-              Em breve
-            </div>
-            <div className="text-xs uppercase tracking-[0.25em] text-[#8a98a5]">
-              Benefícios em construção
-            </div>
+            <a
+              href="/portal-socio/descontos"
+              className="inline-flex items-center gap-2 rounded-full border border-[#1f6dd1]/30 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#1f6dd1] transition hover:-translate-y-0.5 hover:bg-[#f2f6ff]"
+            >
+              Ver benefícios
+            </a>
           </PortalCard>
         </section>
       </div>

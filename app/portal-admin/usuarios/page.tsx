@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PortalShell } from "../../../components/portal/PortalShell";
 import { Modal } from "../../../components/portal/Modal";
 import { apiFetch } from "../../../lib/api";
@@ -14,7 +14,7 @@ const NAV_LINKS = [
   { label: "Benefícios", href: "/portal-admin/beneficios" },
 ];
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+const PAGE_SIZE = 50;
 
 type CreateUserPayload = {
   name: string;
@@ -23,20 +23,69 @@ type CreateUserPayload = {
   role: UserRole;
 };
 
-type EditUserPayload = {
+type EditUserFormState = {
   name: string;
   email: string;
   role: UserRole;
   active: boolean;
+  city: string;
+  uf: string;
+  admission_date: string;
+  profession: string;
 };
 
-type BulkResult = {
-  processed: number;
-  created?: number;
-  deleted?: number;
-  skipped: number;
-  errors: { row: number; message: string }[];
+type ImportError = {
+  row: number;
+  message: string;
 };
+
+type ImportRow = {
+  row: number;
+  name: string;
+  email: string;
+  city: string | null;
+  uf: string | null;
+  admission_date: string | null;
+  profession: string | null;
+  exists: boolean;
+  needs_completion: boolean;
+  missing_fields: string[];
+};
+
+type ImportPreview = {
+  processed: number;
+  valid_rows: number;
+  new_rows: ImportRow[];
+  existing_rows: ImportRow[];
+  completion_rows: ImportRow[];
+  missing_in_file: User[];
+  errors: ImportError[];
+};
+
+type ImportApplyResult = {
+  processed: number;
+  created: number;
+  updated: number;
+  deleted: number;
+  skipped: number;
+  errors: ImportError[];
+};
+
+const roleLabel = (role: UserRole) => (role === "admin" ? "Administrador" : "Sócio");
+
+const formatDate = (value: string | null) => {
+  if (!value) {
+    return "-";
+  }
+  const normalized = value.slice(0, 10);
+  const [year, month, day] = normalized.split("-");
+  if (!year || !month || !day) {
+    return value;
+  }
+  return `${day}/${month}/${year}`;
+};
+
+const normalizeText = (value: string | null | undefined) => (value ?? "").trim();
 
 export default function PortalAdminUsuariosPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -48,33 +97,47 @@ export default function PortalAdminUsuariosPage() {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [editForm, setEditForm] = useState<EditUserPayload | null>(null);
+  const [editForm, setEditForm] = useState<EditUserFormState | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
   const [editLoading, setEditLoading] = useState(false);
+
   const [passwordUser, setPasswordUser] = useState<User | null>(null);
   const [passwordValue, setPasswordValue] = useState("");
   const [passwordGenerated, setPasswordGenerated] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordLoading, setPasswordLoading] = useState(false);
+
   const [deleteUser, setDeleteUser] = useState<User | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [bulkCreateFile, setBulkCreateFile] = useState<File | null>(null);
-  const [bulkDeleteFile, setBulkDeleteFile] = useState<File | null>(null);
-  const [bulkCreateResult, setBulkCreateResult] = useState<BulkResult | null>(null);
-  const [bulkDeleteResult, setBulkDeleteResult] = useState<BulkResult | null>(null);
-  const [bulkCreateError, setBulkCreateError] = useState<string | null>(null);
-  const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null);
-  const [bulkCreateLoading, setBulkCreateLoading] = useState(false);
-  const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false);
-  const [templateError, setTemplateError] = useState<string | null>(null);
+
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importPreview, setImportPreview] = useState<ImportPreview | null>(null);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewTab, setPreviewTab] = useState<"novos" | "complementos" | "exclusao" | "existentes">("novos");
+  const [importRoleMap, setImportRoleMap] = useState<Record<string, UserRole>>({});
+
+  const [applyCreateNew, setApplyCreateNew] = useState(true);
+  const [applyFillMissing, setApplyFillMissing] = useState(true);
+  const [applyDeleteMissing, setApplyDeleteMissing] = useState(false);
+  const [applyLoading, setApplyLoading] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
+  const [applyResult, setApplyResult] = useState<ImportApplyResult | null>(null);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | UserRole>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const loadUsers = async () => {
     try {
       const data = await apiFetch<User[]>("/admin/users");
       setUsers(data);
-    } catch (err) {
+    } catch {
       setUsers([]);
     }
   };
@@ -82,6 +145,40 @@ export default function PortalAdminUsuariosPage() {
   useEffect(() => {
     loadUsers();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, roleFilter, statusFilter]);
+
+  const filteredUsers = useMemo(() => {
+    const term = searchTerm.toLowerCase().trim();
+
+    return users.filter((user) => {
+      const matchesSearch =
+        term.length === 0 ||
+        user.name.toLowerCase().includes(term) ||
+        user.email.toLowerCase().includes(term) ||
+        (user.city ?? "").toLowerCase().includes(term) ||
+        (user.profession ?? "").toLowerCase().includes(term);
+
+      const matchesRole = roleFilter === "all" || user.role === roleFilter;
+      const matchesStatus =
+        statusFilter === "all" || (statusFilter === "active" ? user.active : !user.active);
+
+      return matchesSearch && matchesRole && matchesStatus;
+    });
+  }, [users, searchTerm, roleFilter, statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedUsers = filteredUsers.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   const generatePassword = (length = 10) => {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#";
@@ -119,6 +216,10 @@ export default function PortalAdminUsuariosPage() {
       email: user.email,
       role: user.role,
       active: user.active,
+      city: user.city ?? "",
+      uf: user.uf ?? "",
+      admission_date: user.admission_date ? user.admission_date.slice(0, 10) : "",
+      profession: user.profession ?? "",
     });
     setEditError(null);
   };
@@ -127,12 +228,23 @@ export default function PortalAdminUsuariosPage() {
     if (!editingUser || !editForm) {
       return;
     }
+
     setEditLoading(true);
     setEditError(null);
+
     try {
       await apiFetch<User>(`/admin/users/${editingUser.id}`, {
         method: "PATCH",
-        body: JSON.stringify(editForm),
+        body: JSON.stringify({
+          name: editForm.name,
+          email: editForm.email,
+          role: editForm.role,
+          active: editForm.active,
+          city: normalizeText(editForm.city) || null,
+          uf: normalizeText(editForm.uf).toUpperCase() || null,
+          admission_date: normalizeText(editForm.admission_date) || null,
+          profession: normalizeText(editForm.profession) || null,
+        }),
       });
       setEditingUser(null);
       setEditForm(null);
@@ -161,8 +273,10 @@ export default function PortalAdminUsuariosPage() {
       setPasswordError("Informe uma senha válida.");
       return;
     }
+
     setPasswordLoading(true);
     setPasswordError(null);
+
     try {
       await apiFetch<User>(`/admin/users/${passwordUser.id}/password`, {
         method: "PATCH",
@@ -184,8 +298,10 @@ export default function PortalAdminUsuariosPage() {
     if (!deleteUser) {
       return;
     }
+
     setDeleteLoading(true);
     setDeleteError(null);
+
     try {
       await apiFetch(`/admin/users/${deleteUser.id}`, { method: "DELETE" });
       setDeleteUser(null);
@@ -211,87 +327,105 @@ export default function PortalAdminUsuariosPage() {
     }
   };
 
-  const handleDownloadTemplate = async (type: "create" | "delete") => {
-    setTemplateError(null);
+  const requestPreview = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return apiFetch<ImportPreview>("/admin/users/import/preview", {
+      method: "POST",
+      body: formData,
+    });
+  };
+
+  const handleImportPreview = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!importFile) {
+      setImportError("Selecione o arquivo exportado do Pega Plantão.");
+      return;
+    }
+
+    setImportLoading(true);
+    setImportError(null);
+    setApplyError(null);
+    setApplyResult(null);
+
     try {
-      const response = await fetch(`${API_BASE}/admin/users/templates/${type}`, {
-        credentials: "include",
+      const preview = await requestPreview(importFile);
+      setImportPreview(preview);
+      setImportRoleMap((previous) => {
+        const nextMap: Record<string, UserRole> = {};
+        preview.new_rows.forEach((row) => {
+          const email = row.email.toLowerCase();
+          nextMap[email] = previous[email] ?? "socio";
+        });
+        return nextMap;
       });
-      if (!response.ok) {
-        throw new Error("Erro ao baixar o modelo.");
+      setPreviewModalOpen(true);
+      if (preview.new_rows.length > 0) {
+        setPreviewTab("novos");
+      } else if (preview.completion_rows.length > 0) {
+        setPreviewTab("complementos");
+      } else if (preview.missing_in_file.length > 0) {
+        setPreviewTab("exclusao");
+      } else {
+        setPreviewTab("existentes");
       }
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = type === "create" ? "modelo-usuarios-criacao.xlsx" : "modelo-usuarios-exclusao.xlsx";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro ao baixar o modelo.";
-      setTemplateError(message);
+      const message = err instanceof Error ? err.message : "Erro ao analisar o arquivo.";
+      setImportError(message);
+    } finally {
+      setImportLoading(false);
     }
   };
 
-  const handleBulkCreate = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!bulkCreateFile) {
-      setBulkCreateError("Selecione um arquivo Excel para criação em massa.");
+  const handleApplyImport = async () => {
+    if (!importFile) {
+      setApplyError("Selecione novamente o arquivo para aplicar a importação.");
       return;
     }
-    setBulkCreateLoading(true);
-    setBulkCreateError(null);
-    setBulkCreateResult(null);
 
-    const formData = new FormData();
-    formData.append("file", bulkCreateFile);
+    setApplyLoading(true);
+    setApplyError(null);
+    setApplyResult(null);
 
     try {
-      const result = await apiFetch<BulkResult>("/admin/users/bulk-create", {
+      const query = new URLSearchParams({
+        create_new: String(applyCreateNew),
+        fill_missing_data: String(applyFillMissing),
+        delete_missing_users: String(applyDeleteMissing),
+      });
+
+      const formData = new FormData();
+      formData.append("file", importFile);
+      formData.append("role_map_json", JSON.stringify(importRoleMap));
+
+      const result = await apiFetch<ImportApplyResult>(`/admin/users/import/apply?${query.toString()}`, {
         method: "POST",
         body: formData,
       });
-      setBulkCreateResult(result);
-      setBulkCreateFile(null);
+
+      setApplyResult(result);
       await loadUsers();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro ao importar usuários.";
-      setBulkCreateError(message);
-    } finally {
-      setBulkCreateLoading(false);
-    }
-  };
 
-  const handleBulkDelete = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!bulkDeleteFile) {
-      setBulkDeleteError("Selecione um arquivo Excel para exclusão em massa.");
-      return;
-    }
-    setBulkDeleteLoading(true);
-    setBulkDeleteError(null);
-    setBulkDeleteResult(null);
-
-    const formData = new FormData();
-    formData.append("file", bulkDeleteFile);
-
-    try {
-      const result = await apiFetch<BulkResult>("/admin/users/bulk-delete", {
-        method: "POST",
-        body: formData,
+      const refreshedPreview = await requestPreview(importFile);
+      setImportPreview(refreshedPreview);
+      setImportRoleMap((previous) => {
+        const nextMap: Record<string, UserRole> = {};
+        refreshedPreview.new_rows.forEach((row) => {
+          const email = row.email.toLowerCase();
+          nextMap[email] = previous[email] ?? "socio";
+        });
+        return nextMap;
       });
-      setBulkDeleteResult(result);
-      setBulkDeleteFile(null);
-      await loadUsers();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro ao excluir usuários.";
-      setBulkDeleteError(message);
+      const message = err instanceof Error ? err.message : "Erro ao aplicar importação.";
+      setApplyError(message);
     } finally {
-      setBulkDeleteLoading(false);
+      setApplyLoading(false);
     }
   };
+
+  const compactActionClass =
+    "rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition hover:-translate-y-0.5";
 
   return (
     <PortalShell role="admin" loginPath="/portal-admin/login" title="Portal Administrativo" links={NAV_LINKS}>
@@ -300,7 +434,7 @@ export default function PortalAdminUsuariosPage() {
           <div className="text-sm font-semibold uppercase tracking-[0.3em] text-[#1f6dd1]">Gestão de usuários</div>
           <h1 className="mt-3 text-3xl font-bold text-[#1a2732]">Controle de acessos</h1>
           <p className="mt-3 text-sm text-[#5b6b78]">
-            Crie acessos administrativos ou de sócio, e mantenha o controle de permissões.
+            Gerencie usuários, acompanhe importações em lote do Pega Plantão e mantenha os dados profissionais atualizados.
           </p>
         </div>
 
@@ -364,168 +498,122 @@ export default function PortalAdminUsuariosPage() {
         </form>
 
         <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-lg shadow-[#1f6dd1]/10">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.3em] text-[#1f6dd1]">Importação em massa</div>
-              <h2 className="mt-2 text-2xl font-bold text-[#1a2732]">Usuários em lote</h2>
-              <p className="mt-2 text-sm text-[#5b6b78]">
-                Baixe o modelo Excel, preencha conforme o padrão e envie para criar ou excluir usuários em massa.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => handleDownloadTemplate("create")}
-                className="inline-flex items-center gap-2 rounded-full border border-[#1f6dd1]/30 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#1f6dd1] transition hover:-translate-y-0.5 hover:bg-[#f2f6ff]"
-              >
-                Baixar modelo de criação
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDownloadTemplate("delete")}
-                className="inline-flex items-center gap-2 rounded-full border border-[#ff6b6b]/40 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#ff6b6b] transition hover:-translate-y-0.5 hover:bg-[#ffe3e3]"
-              >
-                Baixar modelo de exclusão
-              </button>
-            </div>
+          <div className="text-sm font-semibold uppercase tracking-[0.3em] text-[#1f6dd1]">Importação em massa</div>
+          <h2 className="mt-2 text-2xl font-bold text-[#1a2732]">Usuários em lote - Pega Plantão</h2>
+          <p className="mt-2 text-sm text-[#5b6b78]">
+            Importe o arquivo do Pega Plantão para analisar novos usuários, complementar dados faltantes e identificar quem não
+            está mais na lista atualizada.
+          </p>
+          <div className="mt-3 inline-flex items-center rounded-full border border-[#1f6dd1]/20 bg-[#f2f6ff] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#1f6dd1]">
+            Senha inicial dos novos usuários: 123456
           </div>
-          {templateError && (
-            <div className="mt-4 rounded-2xl border border-[#ff6b6b]/30 bg-[#ffe3e3] px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-[#ff6b6b]">
-              {templateError}
+
+          <form onSubmit={handleImportPreview} className="mt-5 rounded-3xl border border-[#e5d6c5] bg-white/80 p-5">
+            <label className="block text-sm font-semibold text-[#2f4050]">
+              Arquivo do Pega Plantão (.xlsx)
+              <input
+                type="file"
+                accept=".xlsx"
+                onChange={(event) => {
+                  setImportFile(event.target.files?.[0] ?? null);
+                  setImportError(null);
+                  setImportPreview(null);
+                  setImportRoleMap({});
+                  setApplyError(null);
+                  setApplyResult(null);
+                }}
+                className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+              />
+            </label>
+
+            {importFile && <div className="mt-2 text-xs text-[#5b6b78]">Selecionado: {importFile.name}</div>}
+
+            {importError && (
+              <div className="mt-4 rounded-2xl border border-[#ff6b6b]/30 bg-[#ffe3e3] px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-[#ff6b6b]">
+                {importError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={importLoading}
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#1f6dd1] px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:-translate-y-0.5 hover:bg-[#1659ae] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {importLoading ? "Analisando..." : "Analisar arquivo"}
+            </button>
+          </form>
+
+          {applyResult && (
+            <div className="mt-4 rounded-2xl border border-[#1f6dd1]/25 bg-[#f2f6ff] px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-[#1f6dd1]">
+              Aplicado: {applyResult.created} criados · {applyResult.updated} atualizados · {applyResult.deleted} excluídos · {" "}
+              {applyResult.skipped} ignorados
             </div>
           )}
-
-          <div className="mt-6 grid gap-6 lg:grid-cols-2">
-            <form
-              onSubmit={handleBulkCreate}
-              className="rounded-3xl border border-[#e5d6c5] bg-white/80 p-5"
-            >
-              <div className="text-xs font-semibold uppercase tracking-[0.3em] text-[#1f6dd1]">
-                Criação em massa
-              </div>
-              <label className="mt-4 block text-sm font-semibold text-[#2f4050]">
-                Arquivo Excel (.xlsx)
-                <input
-                  type="file"
-                  accept=".xlsx"
-                  onChange={(event) => {
-                    setBulkCreateFile(event.target.files?.[0] ?? null);
-                    setBulkCreateError(null);
-                    setBulkCreateResult(null);
-                  }}
-                  className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
-                />
-              </label>
-              {bulkCreateFile && (
-                <div className="mt-2 text-xs text-[#5b6b78]">Selecionado: {bulkCreateFile.name}</div>
-              )}
-              {bulkCreateError && (
-                <div className="mt-4 rounded-2xl border border-[#ff6b6b]/30 bg-[#ffe3e3] px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-[#ff6b6b]">
-                  {bulkCreateError}
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={bulkCreateLoading}
-                className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#1f6dd1] px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:-translate-y-0.5 hover:bg-[#1659ae] disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {bulkCreateLoading ? "Importando..." : "Importar criação"}
-              </button>
-              {bulkCreateResult && (
-                <div className="mt-4 rounded-2xl border border-[#1f6dd1]/30 bg-[#f2f6ff] px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-[#1f6dd1]">
-                  Criados: {bulkCreateResult.created ?? 0} · Processados: {bulkCreateResult.processed} · Erros:{" "}
-                  {bulkCreateResult.errors.length}
-                </div>
-              )}
-              {bulkCreateResult && bulkCreateResult.errors.length > 0 && (
-                <div className="mt-3 rounded-2xl border border-[#ff6b6b]/30 bg-[#ffe3e3] px-4 py-3 text-xs text-[#ff6b6b]">
-                  {bulkCreateResult.errors.slice(0, 5).map((item) => (
-                    <div key={`${item.row}-${item.message}`}>Linha {item.row}: {item.message}</div>
-                  ))}
-                  {bulkCreateResult.errors.length > 5 && (
-                    <div className="mt-2">+ {bulkCreateResult.errors.length - 5} erros</div>
-                  )}
-                </div>
-              )}
-            </form>
-
-            <form
-              onSubmit={handleBulkDelete}
-              className="rounded-3xl border border-[#e5d6c5] bg-white/80 p-5"
-            >
-              <div className="text-xs font-semibold uppercase tracking-[0.3em] text-[#ff6b6b]">
-                Exclusão em massa
-              </div>
-              <label className="mt-4 block text-sm font-semibold text-[#2f4050]">
-                Arquivo Excel (.xlsx)
-                <input
-                  type="file"
-                  accept=".xlsx"
-                  onChange={(event) => {
-                    setBulkDeleteFile(event.target.files?.[0] ?? null);
-                    setBulkDeleteError(null);
-                    setBulkDeleteResult(null);
-                  }}
-                  className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#ff6b6b] focus:outline-none focus:ring-2 focus:ring-[#ff6b6b]/20"
-                />
-              </label>
-              {bulkDeleteFile && (
-                <div className="mt-2 text-xs text-[#5b6b78]">Selecionado: {bulkDeleteFile.name}</div>
-              )}
-              {bulkDeleteError && (
-                <div className="mt-4 rounded-2xl border border-[#ff6b6b]/30 bg-[#ffe3e3] px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-[#ff6b6b]">
-                  {bulkDeleteError}
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={bulkDeleteLoading}
-                className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#ff6b6b] px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:-translate-y-0.5 hover:bg-[#e85b5b] disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {bulkDeleteLoading ? "Excluindo..." : "Importar exclusão"}
-              </button>
-              {bulkDeleteResult && (
-                <div className="mt-4 rounded-2xl border border-[#ff6b6b]/30 bg-[#ffe3e3] px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-[#ff6b6b]">
-                  Excluídos: {bulkDeleteResult.deleted ?? 0} · Processados: {bulkDeleteResult.processed} · Erros:{" "}
-                  {bulkDeleteResult.errors.length}
-                </div>
-              )}
-              {bulkDeleteResult && bulkDeleteResult.errors.length > 0 && (
-                <div className="mt-3 rounded-2xl border border-[#ff6b6b]/30 bg-[#ffe3e3] px-4 py-3 text-xs text-[#ff6b6b]">
-                  {bulkDeleteResult.errors.slice(0, 5).map((item) => (
-                    <div key={`${item.row}-${item.message}`}>Linha {item.row}: {item.message}</div>
-                  ))}
-                  {bulkDeleteResult.errors.length > 5 && (
-                    <div className="mt-2">+ {bulkDeleteResult.errors.length - 5} erros</div>
-                  )}
-                </div>
-              )}
-            </form>
-          </div>
         </div>
 
         <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-lg shadow-[#1f6dd1]/10">
-          <div className="text-sm font-semibold uppercase tracking-[0.3em] text-[#1f6dd1]">Usuários cadastrados</div>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <div className="text-sm font-semibold uppercase tracking-[0.3em] text-[#1f6dd1]">Usuários cadastrados</div>
+              <div className="mt-2 text-sm text-[#5b6b78]">
+                {filteredUsers.length} resultado(s) · Página {safePage} de {totalPages}
+              </div>
+            </div>
+
+            <div className="grid w-full gap-3 md:w-auto md:grid-cols-3">
+              <input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Buscar por nome, e-mail, cidade ou profissão"
+                className="w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-2.5 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20 md:min-w-[300px]"
+              />
+              <select
+                value={roleFilter}
+                onChange={(event) => setRoleFilter(event.target.value as "all" | UserRole)}
+                className="rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-2.5 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+              >
+                <option value="all">Todos os perfis</option>
+                <option value="admin">Administrador</option>
+                <option value="socio">Sócio</option>
+              </select>
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value as "all" | "active" | "inactive")}
+                className="rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-2.5 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+              >
+                <option value="all">Todos os status</option>
+                <option value="active">Ativo</option>
+                <option value="inactive">Inativo</option>
+              </select>
+            </div>
+          </div>
+
           <div className="mt-4 overflow-x-auto">
             <table className="min-w-full text-left text-sm">
               <thead className="text-xs uppercase tracking-[0.2em] text-[#1f6dd1]">
                 <tr>
                   <th className="py-2 pr-4">Nome</th>
                   <th className="py-2 pr-4">E-mail</th>
+                  <th className="py-2 pr-4">Cidade/UF</th>
+                  <th className="py-2 pr-4">Profissão</th>
+                  <th className="py-2 pr-4">Admissão</th>
                   <th className="py-2 pr-4">Perfil</th>
                   <th className="py-2 pr-4">Status</th>
                   <th className="py-2">Ações</th>
                 </tr>
               </thead>
               <tbody className="text-[#3b4b5a]">
-                {users.map((user) => (
+                {paginatedUsers.map((user) => (
                   <tr key={user.id} className="border-t border-[#f0e4d7]">
                     <td className="py-3 pr-4 font-semibold text-[#1a2732]">{user.name}</td>
                     <td className="py-3 pr-4">{user.email}</td>
-                    <td className="py-3 pr-4">{user.role === "admin" ? "Administrador" : "Sócio"}</td>
+                    <td className="py-3 pr-4">{[user.city, user.uf].filter(Boolean).join("/") || "-"}</td>
+                    <td className="py-3 pr-4">{user.profession || "-"}</td>
+                    <td className="py-3 pr-4">{formatDate(user.admission_date)}</td>
+                    <td className="py-3 pr-4">{roleLabel(user.role)}</td>
                     <td className="py-3 pr-4">
                       <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
+                        className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] ${
                           user.active ? "bg-[#e6f0ff] text-[#1f6dd1]" : "bg-[#ffe3e3] text-[#ff6b6b]"
                         }`}
                       >
@@ -533,32 +621,32 @@ export default function PortalAdminUsuariosPage() {
                       </span>
                     </td>
                     <td className="py-3">
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         <button
                           type="button"
                           onClick={() => openEditUser(user)}
-                          className="rounded-full border border-[#1f6dd1]/30 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#1f6dd1] transition hover:bg-[#f2f6ff]"
+                          className={`${compactActionClass} border-[#1f6dd1]/30 text-[#1f6dd1] hover:bg-[#f2f6ff]`}
                         >
                           Editar
                         </button>
                         <button
                           type="button"
                           onClick={() => openPasswordModal(user, "edit")}
-                          className="rounded-full border border-[#1f6dd1]/30 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#1f6dd1] transition hover:bg-[#f2f6ff]"
+                          className={`${compactActionClass} border-[#1f6dd1]/30 text-[#1f6dd1] hover:bg-[#f2f6ff]`}
                         >
-                          Editar senha
+                          Senha
                         </button>
                         <button
                           type="button"
                           onClick={() => openPasswordModal(user, "reset")}
-                          className="rounded-full border border-[#ff6b6b]/30 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#ff6b6b] transition hover:bg-[#ffe3e3]"
+                          className={`${compactActionClass} border-[#ff6b6b]/30 text-[#ff6b6b] hover:bg-[#ffe3e3]`}
                         >
-                          Resetar senha
+                          Reset
                         </button>
                         <button
                           type="button"
                           onClick={() => toggleActive(user)}
-                          className="rounded-full border border-[#1f6dd1]/30 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#1f6dd1] transition hover:bg-[#f2f6ff]"
+                          className={`${compactActionClass} border-[#1f6dd1]/30 text-[#1f6dd1] hover:bg-[#f2f6ff]`}
                         >
                           {user.active ? "Desativar" : "Ativar"}
                         </button>
@@ -568,7 +656,7 @@ export default function PortalAdminUsuariosPage() {
                             setDeleteUser(user);
                             setDeleteError(null);
                           }}
-                          className="rounded-full border border-[#ff6b6b]/40 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#ff6b6b] transition hover:bg-[#ffe3e3]"
+                          className={`${compactActionClass} border-[#ff6b6b]/40 text-[#ff6b6b] hover:bg-[#ffe3e3]`}
                         >
                           Excluir
                         </button>
@@ -576,18 +664,335 @@ export default function PortalAdminUsuariosPage() {
                     </td>
                   </tr>
                 ))}
-                {users.length === 0 && (
+                {paginatedUsers.length === 0 && (
                   <tr>
-                    <td className="py-4 text-sm text-[#5b6b78]" colSpan={5}>
-                      Nenhum usuário cadastrado.
+                    <td className="py-4 text-sm text-[#5b6b78]" colSpan={8}>
+                      Nenhum usuário encontrado para o filtro atual.
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
+
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="text-xs text-[#5b6b78]">
+              Exibindo {paginatedUsers.length} de {filteredUsers.length} usuário(s)
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={safePage <= 1}
+                onClick={() => setCurrentPage((previous) => Math.max(1, previous - 1))}
+                className="rounded-full border border-[#1f6dd1]/25 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#1f6dd1] transition hover:bg-[#f2f6ff] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Anterior
+              </button>
+              <span className="rounded-full bg-[#f2f6ff] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#1f6dd1]">
+                {safePage}/{totalPages}
+              </span>
+              <button
+                type="button"
+                disabled={safePage >= totalPages}
+                onClick={() => setCurrentPage((previous) => Math.min(totalPages, previous + 1))}
+                className="rounded-full border border-[#1f6dd1]/25 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#1f6dd1] transition hover:bg-[#f2f6ff] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Próxima
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+
+      <Modal
+        open={previewModalOpen && Boolean(importPreview)}
+        title="Análise da importação"
+        eyebrow="Pega Plantão"
+        iconName="info"
+        tone="primary"
+        onClose={() => {
+          setPreviewModalOpen(false);
+          setApplyError(null);
+        }}
+      >
+        {importPreview && (
+          <div className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-2xl border border-[#1f6dd1]/20 bg-[#f2f6ff] p-3">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1f6dd1]">Linhas lidas</div>
+                <div className="mt-1 text-lg font-bold text-[#1a2732]">{importPreview.processed}</div>
+              </div>
+              <div className="rounded-2xl border border-[#1f6dd1]/20 bg-[#f2f6ff] p-3">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1f6dd1]">Novos usuários</div>
+                <div className="mt-1 text-lg font-bold text-[#1a2732]">{importPreview.new_rows.length}</div>
+              </div>
+              <div className="rounded-2xl border border-[#f6a63b]/30 bg-[#fff7ea] p-3">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b8741e]">Complementar dados</div>
+                <div className="mt-1 text-lg font-bold text-[#1a2732]">{importPreview.completion_rows.length}</div>
+              </div>
+              <div className="rounded-2xl border border-[#ff6b6b]/25 bg-[#ffecec] p-3">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ff6b6b]">Fora da lista</div>
+                <div className="mt-1 text-lg font-bold text-[#1a2732]">{importPreview.missing_in_file.length}</div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[#e5d6c5] bg-white/90 p-4">
+              <div className="text-xs font-semibold uppercase tracking-[0.25em] text-[#1f6dd1]">Aplicar importação</div>
+              <div className="mt-3 grid gap-2 text-sm text-[#2f4050]">
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={applyCreateNew}
+                    onChange={(event) => setApplyCreateNew(event.target.checked)}
+                    className="h-4 w-4 rounded border-[#1f6dd1]/30"
+                  />
+                  Criar novos usuários ({importPreview.new_rows.length})
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={applyFillMissing}
+                    onChange={(event) => setApplyFillMissing(event.target.checked)}
+                    className="h-4 w-4 rounded border-[#1f6dd1]/30"
+                  />
+                  Complementar dados faltantes ({importPreview.completion_rows.length})
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={applyDeleteMissing}
+                    onChange={(event) => setApplyDeleteMissing(event.target.checked)}
+                    className="h-4 w-4 rounded border-[#1f6dd1]/30"
+                  />
+                  Excluir usuários fora da lista atual ({importPreview.missing_in_file.length})
+                </label>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleApplyImport}
+                  disabled={applyLoading}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#1f6dd1] px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-[#1659ae] disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {applyLoading ? "Aplicando..." : "Aplicar sincronização"}
+                </button>
+              </div>
+
+              {applyError && (
+                <div className="mt-3 rounded-2xl border border-[#ff6b6b]/30 bg-[#ffe3e3] px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#ff6b6b]">
+                  {applyError}
+                </div>
+              )}
+            </div>
+
+            <div className="inline-flex flex-wrap items-center gap-2 rounded-full border border-[#1f6dd1]/20 bg-[#f2f6ff] p-1">
+              <button
+                type="button"
+                onClick={() => setPreviewTab("novos")}
+                className={`rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] transition ${
+                  previewTab === "novos" ? "bg-[#1f6dd1] text-white" : "text-[#1f6dd1]"
+                }`}
+              >
+                Novos ({importPreview.new_rows.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewTab("complementos")}
+                className={`rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] transition ${
+                  previewTab === "complementos" ? "bg-[#1f6dd1] text-white" : "text-[#1f6dd1]"
+                }`}
+              >
+                Complementos ({importPreview.completion_rows.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewTab("exclusao")}
+                className={`rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] transition ${
+                  previewTab === "exclusao" ? "bg-[#1f6dd1] text-white" : "text-[#1f6dd1]"
+                }`}
+              >
+                Exclusão ({importPreview.missing_in_file.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewTab("existentes")}
+                className={`rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] transition ${
+                  previewTab === "existentes" ? "bg-[#1f6dd1] text-white" : "text-[#1f6dd1]"
+                }`}
+              >
+                Existentes ({importPreview.existing_rows.length})
+              </button>
+            </div>
+
+            <div className="max-h-[52vh] overflow-auto rounded-2xl border border-[#e5d6c5] bg-white/90">
+              {previewTab === "novos" && (
+                <table className="min-w-full text-left text-sm">
+                  <thead className="sticky top-0 bg-white text-[10px] uppercase tracking-[0.2em] text-[#1f6dd1]">
+                    <tr>
+                      <th className="px-3 py-2">Nome</th>
+                      <th className="px-3 py-2">E-mail</th>
+                      <th className="px-3 py-2">Cidade/UF</th>
+                      <th className="px-3 py-2">Profissão</th>
+                      <th className="px-3 py-2">Perfil</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {importPreview.new_rows.map((row) => (
+                      <tr key={`new-${row.email}`} className="border-t border-[#f0e4d7]">
+                        <td className="px-3 py-2 font-semibold text-[#1a2732]">{row.name}</td>
+                        <td className="px-3 py-2">{row.email}</td>
+                        <td className="px-3 py-2">{[row.city, row.uf].filter(Boolean).join("/") || "-"}</td>
+                        <td className="px-3 py-2">{row.profession || "-"}</td>
+                        <td className="px-3 py-2">
+                          <select
+                            value={importRoleMap[row.email.toLowerCase()] ?? "socio"}
+                            onChange={(event) =>
+                              setImportRoleMap((previous) => ({
+                                ...previous,
+                                [row.email.toLowerCase()]: event.target.value as UserRole,
+                              }))
+                            }
+                            className="rounded-full border border-[#e5d6c5] bg-white px-3 py-1 text-xs font-semibold text-[#1a2732] focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+                          >
+                            <option value="socio">Sócio</option>
+                            <option value="admin">Administrador</option>
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                    {importPreview.new_rows.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="px-3 py-4 text-center text-sm text-[#5b6b78]">
+                          Nenhum novo usuário identificado.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+
+              {previewTab === "complementos" && (
+                <table className="min-w-full text-left text-sm">
+                  <thead className="sticky top-0 bg-white text-[10px] uppercase tracking-[0.2em] text-[#1f6dd1]">
+                    <tr>
+                      <th className="px-3 py-2">Nome</th>
+                      <th className="px-3 py-2">E-mail</th>
+                      <th className="px-3 py-2">Campos faltantes</th>
+                      <th className="px-3 py-2">Dados do arquivo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {importPreview.completion_rows.map((row) => (
+                      <tr key={`completion-${row.email}`} className="border-t border-[#f0e4d7]">
+                        <td className="px-3 py-2 font-semibold text-[#1a2732]">{row.name}</td>
+                        <td className="px-3 py-2">{row.email}</td>
+                        <td className="px-3 py-2">{row.missing_fields.join(", ") || "-"}</td>
+                        <td className="px-3 py-2">
+                          {[row.city, row.uf, row.profession].filter(Boolean).join(" · ") || "Sem complemento"}
+                        </td>
+                      </tr>
+                    ))}
+                    {importPreview.completion_rows.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="px-3 py-4 text-center text-sm text-[#5b6b78]">
+                          Nenhum usuário com dados faltantes para complementar.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+
+              {previewTab === "exclusao" && (
+                <table className="min-w-full text-left text-sm">
+                  <thead className="sticky top-0 bg-white text-[10px] uppercase tracking-[0.2em] text-[#ff6b6b]">
+                    <tr>
+                      <th className="px-3 py-2">Nome</th>
+                      <th className="px-3 py-2">E-mail</th>
+                      <th className="px-3 py-2">Profissão</th>
+                      <th className="px-3 py-2">Ação direta</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {importPreview.missing_in_file.map((user) => (
+                      <tr key={`missing-${user.id}`} className="border-t border-[#f0e4d7]">
+                        <td className="px-3 py-2 font-semibold text-[#1a2732]">{user.name}</td>
+                        <td className="px-3 py-2">{user.email}</td>
+                        <td className="px-3 py-2">{user.profession || "-"}</td>
+                        <td className="px-3 py-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPreviewModalOpen(false);
+                              setDeleteUser(user);
+                              setDeleteError(null);
+                            }}
+                            className="rounded-full border border-[#ff6b6b]/35 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#ff6b6b] transition hover:bg-[#ffe3e3]"
+                          >
+                            Excluir agora
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {importPreview.missing_in_file.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="px-3 py-4 text-center text-sm text-[#5b6b78]">
+                          Nenhum usuário pendente para exclusão.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+
+              {previewTab === "existentes" && (
+                <table className="min-w-full text-left text-sm">
+                  <thead className="sticky top-0 bg-white text-[10px] uppercase tracking-[0.2em] text-[#1f6dd1]">
+                    <tr>
+                      <th className="px-3 py-2">Nome</th>
+                      <th className="px-3 py-2">E-mail</th>
+                      <th className="px-3 py-2">Cidade/UF</th>
+                      <th className="px-3 py-2">Profissão</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {importPreview.existing_rows.map((row) => (
+                      <tr key={`existing-${row.email}`} className="border-t border-[#f0e4d7]">
+                        <td className="px-3 py-2 font-semibold text-[#1a2732]">{row.name}</td>
+                        <td className="px-3 py-2">{row.email}</td>
+                        <td className="px-3 py-2">{[row.city, row.uf].filter(Boolean).join("/") || "-"}</td>
+                        <td className="px-3 py-2">{row.profession || "-"}</td>
+                      </tr>
+                    ))}
+                    {importPreview.existing_rows.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="px-3 py-4 text-center text-sm text-[#5b6b78]">
+                          Nenhum usuário já existente neste arquivo.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {importPreview.errors.length > 0 && (
+              <div className="rounded-2xl border border-[#ff6b6b]/25 bg-[#ffecec] px-3 py-2 text-xs text-[#b94444]">
+                <div className="font-semibold uppercase tracking-[0.2em]">Inconsistências encontradas</div>
+                <div className="mt-2 space-y-1">
+                  {importPreview.errors.slice(0, 8).map((item) => (
+                    <div key={`${item.row}-${item.message}`}>Linha {item.row}: {item.message}</div>
+                  ))}
+                  {importPreview.errors.length > 8 && (
+                    <div>+ {importPreview.errors.length - 8} inconsistências adicionais.</div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
 
       <Modal
         open={Boolean(editingUser && editForm)}
@@ -603,24 +1008,27 @@ export default function PortalAdminUsuariosPage() {
       >
         {editForm && (
           <div className="space-y-4">
-            <label className="text-sm font-semibold text-[#2f4050]">
-              Nome completo
-              <input
-                type="text"
-                value={editForm.name}
-                onChange={(event) => setEditForm({ ...editForm, name: event.target.value })}
-                className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
-              />
-            </label>
-            <label className="text-sm font-semibold text-[#2f4050]">
-              E-mail
-              <input
-                type="email"
-                value={editForm.email}
-                onChange={(event) => setEditForm({ ...editForm, email: event.target.value })}
-                className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
-              />
-            </label>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="text-sm font-semibold text-[#2f4050]">
+                Nome completo
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(event) => setEditForm({ ...editForm, name: event.target.value })}
+                  className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+                />
+              </label>
+              <label className="text-sm font-semibold text-[#2f4050]">
+                E-mail
+                <input
+                  type="email"
+                  value={editForm.email}
+                  onChange={(event) => setEditForm({ ...editForm, email: event.target.value })}
+                  className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+                />
+              </label>
+            </div>
+
             <div className="grid gap-4 md:grid-cols-2">
               <label className="text-sm font-semibold text-[#2f4050]">
                 Perfil
@@ -645,6 +1053,47 @@ export default function PortalAdminUsuariosPage() {
                 </select>
               </label>
             </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="text-sm font-semibold text-[#2f4050]">
+                Cidade
+                <input
+                  type="text"
+                  value={editForm.city}
+                  onChange={(event) => setEditForm({ ...editForm, city: event.target.value })}
+                  className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+                />
+              </label>
+              <label className="text-sm font-semibold text-[#2f4050]">
+                UF
+                <input
+                  type="text"
+                  maxLength={2}
+                  value={editForm.uf}
+                  onChange={(event) => setEditForm({ ...editForm, uf: event.target.value.toUpperCase() })}
+                  className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm uppercase focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+                />
+              </label>
+              <label className="text-sm font-semibold text-[#2f4050]">
+                Data de admissão
+                <input
+                  type="date"
+                  value={editForm.admission_date}
+                  onChange={(event) => setEditForm({ ...editForm, admission_date: event.target.value })}
+                  className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+                />
+              </label>
+              <label className="text-sm font-semibold text-[#2f4050]">
+                Profissão
+                <input
+                  type="text"
+                  value={editForm.profession}
+                  onChange={(event) => setEditForm({ ...editForm, profession: event.target.value })}
+                  className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+                />
+              </label>
+            </div>
+
             {editError && (
               <div className="rounded-2xl border border-[#ff6b6b]/30 bg-[#ffe3e3] px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-[#ff6b6b]">
                 {editError}
@@ -734,9 +1183,7 @@ export default function PortalAdminUsuariosPage() {
         }}
       >
         <div className="space-y-4">
-          <p className="text-sm text-[#3b4b5a]">
-            Tem certeza que deseja excluir este usuário? Essa ação é irreversível.
-          </p>
+          <p className="text-sm text-[#3b4b5a]">Tem certeza que deseja excluir este usuário? Essa ação é irreversível.</p>
           {deleteError && (
             <div className="rounded-2xl border border-[#ff6b6b]/30 bg-[#ffe3e3] px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-[#ff6b6b]">
               {deleteError}
