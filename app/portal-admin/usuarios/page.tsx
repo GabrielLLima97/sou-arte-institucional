@@ -738,54 +738,86 @@ export default function PortalAdminUsuariosPage() {
               </div>
             </div>
 
-            <div className="flex-none rounded-2xl border border-[#e5d6c5] bg-white/90 p-4">
-              <div className="text-xs font-semibold uppercase tracking-[0.25em] text-[#1f6dd1]">Aplicar importação</div>
-              <div className="mt-3 grid gap-2 text-sm text-[#2f4050]">
-                <label className="inline-flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={applyCreateNew}
-                    onChange={(event) => setApplyCreateNew(event.target.checked)}
-                    className="h-4 w-4 rounded border-[#1f6dd1]/30"
-                  />
-                  Criar novos usuários ({importPreview.new_rows.length})
-                </label>
-                <label className="inline-flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={applyFillMissing}
-                    onChange={(event) => setApplyFillMissing(event.target.checked)}
-                    className="h-4 w-4 rounded border-[#1f6dd1]/30"
-                  />
-                  Complementar dados faltantes ({importPreview.completion_rows.length})
-                </label>
-                <label className="inline-flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={applyDeleteMissing}
-                    onChange={(event) => setApplyDeleteMissing(event.target.checked)}
-                    className="h-4 w-4 rounded border-[#1f6dd1]/30"
-                  />
-                  Excluir usuários fora da lista atual ({importPreview.missing_in_file.length})
-                </label>
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={handleApplyImport}
-                  disabled={applyLoading}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#1f6dd1] px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-[#1659ae] disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                  {applyLoading ? "Aplicando..." : "Aplicar sincronização"}
-                </button>
-              </div>
-
-              {applyError && (
-                <div className="mt-3 rounded-2xl border border-[#ff6b6b]/30 bg-[#ffe3e3] px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#ff6b6b]">
-                  {applyError}
+            <div className="grid flex-none gap-4 lg:grid-cols-2">
+              <div className="rounded-2xl border border-[#e5d6c5] bg-white/90 p-4">
+                <div className="text-xs font-semibold uppercase tracking-[0.25em] text-[#1f6dd1]">Aplicar importação</div>
+                <div className="mt-3 grid gap-2 text-sm text-[#2f4050]">
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={applyCreateNew}
+                      onChange={(event) => setApplyCreateNew(event.target.checked)}
+                      className="h-4 w-4 rounded border-[#1f6dd1]/30"
+                    />
+                    Criar novos usuários ({importPreview.new_rows.length})
+                  </label>
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={applyFillMissing}
+                      onChange={(event) => setApplyFillMissing(event.target.checked)}
+                      className="h-4 w-4 rounded border-[#1f6dd1]/30"
+                    />
+                    Complementar dados faltantes ({importPreview.completion_rows.length})
+                  </label>
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={applyDeleteMissing}
+                      onChange={(event) => setApplyDeleteMissing(event.target.checked)}
+                      className="h-4 w-4 rounded border-[#1f6dd1]/30"
+                    />
+                    Excluir usuários fora da lista atual ({importPreview.missing_in_file.length})
+                  </label>
                 </div>
-              )}
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleApplyImport}
+                    disabled={applyLoading}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#1f6dd1] px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-[#1659ae] disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {applyLoading ? "Aplicando..." : "Aplicar sincronização"}
+                  </button>
+                </div>
+
+                {applyError && (
+                  <div className="mt-3 rounded-2xl border border-[#ff6b6b]/30 bg-[#ffe3e3] px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#ff6b6b]">
+                    {applyError}
+                  </div>
+                )}
+              </div>
+
+              <div
+                className={`rounded-2xl border px-4 py-4 ${
+                  importPreview.errors.length > 0
+                    ? "border-[#ff6b6b]/25 bg-[#ffecec]"
+                    : "border-[#1f6dd1]/20 bg-[#f2f6ff]"
+                }`}
+              >
+                <div
+                  className={`text-xs font-semibold uppercase tracking-[0.2em] ${
+                    importPreview.errors.length > 0 ? "text-[#b94444]" : "text-[#1f6dd1]"
+                  }`}
+                >
+                  Inconsistências encontradas
+                </div>
+                <div className="mt-1 text-[11px] font-medium text-[#5b6b78]">
+                  {importPreview.errors.length} item(ns) com pendência de preenchimento.
+                </div>
+                <div className="mt-3 max-h-[168px] space-y-1 overflow-y-auto pr-1 text-xs text-[#b94444]">
+                  {importPreview.errors.length > 0 ? (
+                    importPreview.errors.map((item) => (
+                      <div key={`${item.row}-${item.message}`}>
+                        Linha {item.row}: {item.message}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-[#1f6dd1]">Nenhuma inconsistência encontrada neste arquivo.</div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="flex-none inline-flex flex-wrap items-center gap-2 rounded-full border border-[#1f6dd1]/20 bg-[#f2f6ff] p-1">
@@ -979,19 +1011,6 @@ export default function PortalAdminUsuariosPage() {
               )}
             </div>
 
-            {importPreview.errors.length > 0 && (
-              <div className="flex-none rounded-2xl border border-[#ff6b6b]/25 bg-[#ffecec] px-3 py-2 text-xs text-[#b94444]">
-                <div className="font-semibold uppercase tracking-[0.2em]">Inconsistências encontradas</div>
-                <div className="mt-2 space-y-1">
-                  {importPreview.errors.slice(0, 8).map((item) => (
-                    <div key={`${item.row}-${item.message}`}>Linha {item.row}: {item.message}</div>
-                  ))}
-                  {importPreview.errors.length > 8 && (
-                    <div>+ {importPreview.errors.length - 8} inconsistências adicionais.</div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </Modal>
