@@ -21,6 +21,10 @@ type CreateUserPayload = {
   email: string;
   password: string;
   role: UserRole;
+  city: string;
+  uf: string;
+  admission_date: string;
+  profession: string;
 };
 
 type EditUserFormState = {
@@ -94,6 +98,10 @@ export default function PortalAdminUsuariosPage() {
     email: "",
     password: "",
     role: "socio",
+    city: "",
+    uf: "",
+    admission_date: "",
+    profession: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -194,12 +202,32 @@ export default function PortalAdminUsuariosPage() {
     setLoading(true);
     setError(null);
 
+    const payload: CreateUserPayload = {
+      ...form,
+      name: normalizeText(form.name),
+      email: normalizeText(form.email),
+      password: normalizeText(form.password),
+      city: normalizeText(form.city),
+      uf: normalizeText(form.uf).toUpperCase(),
+      admission_date: normalizeText(form.admission_date),
+      profession: normalizeText(form.profession),
+    };
+
     try {
       await apiFetch<User>("/admin/users", {
         method: "POST",
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
-      setForm({ name: "", email: "", password: "", role: "socio" });
+      setForm({
+        name: "",
+        email: "",
+        password: "",
+        role: "socio",
+        city: "",
+        uf: "",
+        admission_date: "",
+        profession: "",
+      });
       await loadUsers();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao criar usuário.";
@@ -472,6 +500,47 @@ export default function PortalAdminUsuariosPage() {
               />
             </label>
             <label className="text-sm font-semibold text-[#2f4050]">
+              Cidade
+              <input
+                type="text"
+                value={form.city}
+                onChange={(event) => setForm({ ...form, city: event.target.value })}
+                required
+                className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+              />
+            </label>
+            <label className="text-sm font-semibold text-[#2f4050]">
+              UF
+              <input
+                type="text"
+                maxLength={2}
+                value={form.uf}
+                onChange={(event) => setForm({ ...form, uf: event.target.value.toUpperCase() })}
+                required
+                className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm uppercase focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+              />
+            </label>
+            <label className="text-sm font-semibold text-[#2f4050]">
+              Data de admissão
+              <input
+                type="date"
+                value={form.admission_date}
+                onChange={(event) => setForm({ ...form, admission_date: event.target.value })}
+                required
+                className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+              />
+            </label>
+            <label className="text-sm font-semibold text-[#2f4050]">
+              Profissão
+              <input
+                type="text"
+                value={form.profession}
+                onChange={(event) => setForm({ ...form, profession: event.target.value })}
+                required
+                className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/90 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
+              />
+            </label>
+            <label className="text-sm font-semibold text-[#2f4050]">
               Perfil
               <select
                 value={form.role}
@@ -718,7 +787,7 @@ export default function PortalAdminUsuariosPage() {
         }}
       >
         {importPreview && (
-          <div className="flex max-h-[calc(100dvh-14rem)] flex-col gap-4 sm:max-h-[calc(100dvh-16rem)]">
+          <div className="flex max-h-[calc(100dvh-8rem)] flex-col gap-4 sm:max-h-[calc(100dvh-9rem)]">
             <div className="grid flex-none gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-2xl border border-[#1f6dd1]/20 bg-[#f2f6ff] p-3">
                 <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1f6dd1]">Linhas lidas</div>
@@ -738,8 +807,8 @@ export default function PortalAdminUsuariosPage() {
               </div>
             </div>
 
-            <div className="grid flex-none gap-4 lg:grid-cols-2">
-              <div className="rounded-2xl border border-[#e5d6c5] bg-white/90 p-4">
+            <div className="grid flex-none gap-4 md:grid-cols-2">
+              <div className="rounded-2xl border border-[#e5d6c5] bg-white/90 p-4 md:min-h-[198px]">
                 <div className="text-xs font-semibold uppercase tracking-[0.25em] text-[#1f6dd1]">Aplicar importação</div>
                 <div className="mt-3 grid gap-2 text-sm text-[#2f4050]">
                   <label className="inline-flex items-center gap-2">
@@ -794,7 +863,7 @@ export default function PortalAdminUsuariosPage() {
                   importPreview.errors.length > 0
                     ? "border-[#ff6b6b]/25 bg-[#ffecec]"
                     : "border-[#1f6dd1]/20 bg-[#f2f6ff]"
-                }`}
+                } md:min-h-[198px]`}
               >
                 <div
                   className={`text-xs font-semibold uppercase tracking-[0.2em] ${
@@ -806,7 +875,7 @@ export default function PortalAdminUsuariosPage() {
                 <div className="mt-1 text-[11px] font-medium text-[#5b6b78]">
                   {importPreview.errors.length} item(ns) com pendência de preenchimento.
                 </div>
-                <div className="mt-3 max-h-[168px] space-y-1 overflow-y-auto pr-1 text-xs text-[#b94444]">
+                <div className="mt-3 max-h-[130px] space-y-1 overflow-y-auto pr-1 text-xs text-[#b94444] md:max-h-[140px]">
                   {importPreview.errors.length > 0 ? (
                     importPreview.errors.map((item) => (
                       <div key={`${item.row}-${item.message}`}>

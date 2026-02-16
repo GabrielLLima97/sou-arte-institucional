@@ -53,7 +53,27 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
+    city: str
+    uf: str
+    admission_date: date
+    profession: str
     password: str
+
+    @field_validator("name", "city", "profession", "password", mode="before")
+    @classmethod
+    def required_text_fields(cls, value: object) -> str:
+        text_value = str(value).strip() if value is not None else ""
+        if not text_value:
+            raise ValueError("Campo obrigatório.")
+        return text_value
+
+    @field_validator("uf", mode="before")
+    @classmethod
+    def normalize_uf(cls, value: object) -> str:
+        text_value = str(value).strip().upper() if value is not None else ""
+        if len(text_value) != 2:
+            raise ValueError("UF deve ter 2 caracteres.")
+        return text_value
 
 
 class UserUpdate(BaseModel):
