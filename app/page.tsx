@@ -619,11 +619,11 @@ export default function HomePage() {
                   <div>
                     <div className="text-xs uppercase tracking-[0.3em] text-[#1f6dd1]">E-mail</div>
                     <a
-                      href="mailto:souarteemcuidados@gmail.com"
+                      href="mailto:contato@souarteemcuidados.com.br"
                       className="mt-1 inline-flex items-center gap-2 font-semibold hover:text-[#1f6dd1]"
                     >
                       <Icon name="mail" className="h-4 w-4" />
-                      souarteemcuidados@gmail.com
+                      contato@souarteemcuidados.com.br
                     </a>
                   </div>
                   <div>
@@ -706,7 +706,7 @@ export default function HomePage() {
                     <form
                       id="form-servicos"
                       ref={servicesFormRef}
-                      action="mailto:souarteemcuidados@gmail.com?subject=Contato%20-%20Servi%C3%A7os"
+                      action="mailto:contato@souarteemcuidados.com.br?subject=Contato%20-%20Servi%C3%A7os"
                       method="post"
                       encType="text/plain"
                       className="space-y-4"
@@ -833,7 +833,7 @@ export default function HomePage() {
                     <form
                       id="form-associados"
                       ref={associatesFormRef}
-                      action="mailto:souarteemcuidados@gmail.com?subject=Contato%20-%20Associados"
+                      action="mailto:contato@souarteemcuidados.com.br?subject=Contato%20-%20Associados"
                       method="post"
                       encType="text/plain"
                       className="space-y-4"
@@ -1043,7 +1043,7 @@ export default function HomePage() {
                     WhatsApp
                   </a>
                   <a
-                    href="mailto:souarteemcuidados@gmail.com"
+                    href="mailto:contato@souarteemcuidados.com.br"
                     className="inline-flex items-center gap-2 rounded-full border border-[#ff6b6b]/40 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#ff6b6b] transition hover:-translate-y-0.5 hover:bg-[#ffe3e3]"
                   >
                     <Icon name="mail" className="h-4 w-4" />
@@ -1100,9 +1100,9 @@ export default function HomePage() {
                       <Icon name="chat" className="h-4 w-4" />
                       69 99922-0012
                     </a>
-                    <a href="mailto:souarteemcuidados@gmail.com" className="inline-flex items-center gap-2 hover:text-[#1f6dd1]">
+                    <a href="mailto:contato@souarteemcuidados.com.br" className="inline-flex items-center gap-2 hover:text-[#1f6dd1]">
                       <Icon name="mail" className="h-4 w-4" />
-                      souarteemcuidados@gmail.com
+                      contato@souarteemcuidados.com.br
                     </a>
                     <a
                       href="https://www.instagram.com/souarteemcuidados?igsh=MWw5eWNqNmZqbXU4cg=="
