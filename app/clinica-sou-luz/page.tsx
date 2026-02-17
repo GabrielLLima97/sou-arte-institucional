@@ -291,11 +291,11 @@ export default function ClinicaSouLuzPage() {
                 href={`?especialista=${encodeURIComponent(service.title)}#agendamento`}
                 className="group overflow-hidden rounded-3xl border border-white/70 bg-white/85 p-4 shadow-[0_16px_40px_rgba(31,109,209,0.12)] transition hover:-translate-y-1 hover:border-[#1e6f78]/35 hover:bg-white hover:shadow-[0_20px_45px_rgba(31,109,209,0.18)]"
               >
-                <div className="relative h-36 overflow-hidden rounded-2xl sm:h-40">
+                <div className="relative h-44 overflow-hidden rounded-2xl sm:h-44">
                   <img
                     src={service.image}
                     alt={service.title}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    className="h-full w-full origin-top object-cover object-[50%_8%] transition duration-500 group-hover:scale-105 sm:object-[50%_14%]"
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#102a28]/70 via-transparent to-transparent opacity-80 transition group-hover:opacity-60" />
