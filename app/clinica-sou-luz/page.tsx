@@ -86,10 +86,42 @@ const clinicalHighlights = [
   "Estrutura completa para reabilitação, prevenção e acompanhamento contínuo",
 ];
 
-const whatsappContacts = [
-  { label: "(69) 99957-9773", href: "https://wa.me/5569999579773" },
-  { label: "(69) 99933-6717", href: "https://wa.me/5569999336717" },
+const clinicUnits = [
+  {
+    id: "amaz-4000",
+    name: "Unidade Amazonas 4000",
+    street: "Av. Amazonas, n. 4000",
+    neighborhood: "Bairro Agenor de Carvalho",
+    city: "Porto Velho - RO",
+    phoneDisplay: "(69) 99933-6717",
+    phoneIntl: "+55-69-99933-6717",
+    whatsappHref: "https://wa.me/5569999336717",
+  },
+  {
+    id: "amaz-3977",
+    name: "Unidade Amazonas 3977",
+    street: "Av. Amazonas, n. 3977",
+    neighborhood: "Bairro Agenor de Carvalho",
+    city: "Porto Velho - RO",
+    phoneDisplay: "(69) 99932-0691",
+    phoneIntl: "+55-69-99932-0691",
+    whatsappHref: "https://wa.me/5569999320691",
+  },
+  {
+    id: "sete-2546",
+    name: "Unidade Sete de Setembro",
+    street: "Av. Sete de Setembro, n. 2546",
+    neighborhood: "Bairro Centro",
+    city: "Porto Velho - RO",
+    phoneDisplay: "(69) 99957-9773",
+    phoneIntl: "+55-69-99957-9773",
+    whatsappHref: "https://wa.me/5569999579773",
+  },
 ];
+
+const primaryWhatsappNumber = "5569999336717";
+const primaryWhatsappContact =
+  clinicUnits.find((unit) => unit.whatsappHref.endsWith(primaryWhatsappNumber)) ?? clinicUnits[0];
 
 const abaPlans = [
   "Select",
@@ -114,14 +146,26 @@ export default function ClinicaSouLuzPage() {
       "Clínica de reabilitação multiprofissional com atendimento hospitalar, ambulatorial e domiciliar (Home Care).",
     url: "https://clinicasouluz.com.br",
     image: "https://clinicasouluz.com.br/souluz/logo-retangular.png",
-    telephone: ["+55-69-99957-9773", "+55-69-99933-6717"],
+    telephone: clinicUnits.map((unit) => unit.phoneIntl),
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Av. Amazonas, n.º 4000",
+      streetAddress: clinicUnits[0]?.street ?? "Av. Amazonas, n. 4000",
       addressLocality: "Porto Velho",
       addressRegion: "RO",
       addressCountry: "BR",
     },
+    department: clinicUnits.map((unit) => ({
+      "@type": "MedicalClinic",
+      name: `Clínica Sou Luz - ${unit.name}`,
+      telephone: unit.phoneIntl,
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: unit.street,
+        addressLocality: "Porto Velho",
+        addressRegion: "RO",
+        addressCountry: "BR",
+      },
+    })),
     areaServed: "BR",
     medicalSpecialty: [
       "Fonoaudiologia",
@@ -168,7 +212,7 @@ export default function ClinicaSouLuzPage() {
             </a>
           </nav>
           <a
-            href={whatsappContacts[0].href}
+            href={primaryWhatsappContact?.whatsappHref}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-full bg-[#1e6f78] px-4 py-2 text-sm font-semibold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-[#165a61]"
@@ -232,15 +276,20 @@ export default function ClinicaSouLuzPage() {
                   </span>
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {whatsappContacts.map((contact) => (
+                  {clinicUnits.map((unit) => (
                     <a
-                      key={contact.label}
-                      href={contact.href}
+                      key={unit.id}
+                      href={unit.whatsappHref}
                       target="_blank"
                       rel="noreferrer"
                       className="group flex items-center justify-between rounded-2xl border border-[#1e6f78]/20 bg-white/90 px-4 py-3 text-sm font-semibold text-[#1a2732] transition hover:-translate-y-0.5 hover:border-[#1e6f78]/40 hover:bg-white hover:shadow-[0_12px_30px_rgba(30,111,120,0.2)]"
                     >
-                      <span>{contact.label}</span>
+                      <span className="min-w-0">
+                        <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#1e6f78]">
+                          {unit.name}
+                        </span>
+                        <span className="block text-sm font-bold text-[#1a2732]">{unit.phoneDisplay}</span>
+                      </span>
                       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1e6f78]/10 text-[#1e6f78] transition group-hover:bg-[#1e6f78] group-hover:text-white">
                         <Icon name="whatsapp" className="h-5 w-5" />
                       </span>
@@ -314,10 +363,6 @@ export default function ClinicaSouLuzPage() {
               </a>
             ))}
           </div>
-        </section>
-
-        <section id="agendamento" className="mx-auto w-full max-w-screen-2xl px-3 py-10 sm:px-5 lg:px-8">
-          <AppointmentForm specialists={services.map((service) => service.title)} whatsappNumber="5569999579773" />
         </section>
 
         <section id="nucleo-aba" className="mx-auto w-full max-w-screen-2xl px-3 py-10 sm:px-5 lg:px-8">
@@ -530,92 +575,111 @@ export default function ClinicaSouLuzPage() {
         </section>
 
         <section id="contato" className="mx-auto w-full max-w-screen-2xl px-3 pb-12 sm:px-5 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-[0_16px_40px_rgba(31,109,209,0.12)] transition hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(31,109,209,0.18)]">
-              <div className="text-base font-bold uppercase tracking-[0.35em] text-[#1e6f78]">Localização e horário</div>
-              <h2 className="mt-3 font-[var(--font-display)] text-3xl font-extrabold text-[#1a2732]">Visite a Clínica Sou Luz</h2>
+              <div className="text-base font-bold uppercase tracking-[0.35em] text-[#1e6f78]">Nossas unidades</div>
+              <h2 className="mt-3 font-[var(--font-display)] text-3xl font-extrabold text-[#1a2732]">
+                Atendimento em três unidades para cuidar de você com proximidade
+              </h2>
               <p className="mt-3 text-sm text-[#3a5250]">
-                Estrutura acolhedora e equipe preparada para acompanhar cada paciente com cuidado e atenção.
+                Selecione a clínica mais conveniente e fale diretamente com a equipe da unidade para orientações, convênios e
+                agendamento.
               </p>
-              <div className="mt-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-                <div className="relative overflow-hidden rounded-3xl border border-[#1e6f78]/20 bg-gradient-to-br from-[#eef7f6] via-white to-white p-5 transition hover:-translate-y-1 hover:border-[#1e6f78]/35 hover:bg-white hover:shadow-[0_16px_35px_rgba(30,111,120,0.18)]">
-                  <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-[#1e6f78]/15 blur-2xl" />
-                  <div className="flex items-start gap-4">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#1e6f78] shadow-sm">
-                      <Icon name="pin" className="h-6 w-6" />
-                    </span>
-                    <div className="flex-1">
-                      <div className="text-base font-bold uppercase tracking-[0.3em] text-[#1e6f78]">Endereço</div>
-                      <div className="mt-3 rounded-2xl bg-white/85 px-4 py-3">
-                        <p className="text-base font-bold text-[#1a2732]">Av. Amazonas, n.º 4000</p>
-                        <p className="text-sm text-[#2b4a48]">Bairro Agenor de Carvalho, Porto Velho</p>
+
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                {clinicUnits.map((unit) => (
+                  <article
+                    key={unit.id}
+                    className="group relative overflow-hidden rounded-3xl border border-[#1e6f78]/20 bg-gradient-to-br from-[#eef7f6] via-white to-white p-5 transition hover:-translate-y-1 hover:border-[#1e6f78]/35 hover:bg-white hover:shadow-[0_16px_35px_rgba(30,111,120,0.18)]"
+                  >
+                    <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-[#1e6f78]/15 blur-2xl" />
+                    <div className="relative z-10">
+                      <div className="inline-flex items-center rounded-full bg-[#1e6f78]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#1e6f78]">
+                        {unit.name}
                       </div>
-                      <div className="mt-3 flex items-center gap-2 text-base font-bold uppercase tracking-[0.25em] text-[#f6a63b]">
-                        <span className="h-2 w-2 rounded-full bg-[#f6a63b]" />
-                        Fácil acesso e atendimento acolhedor
+                      <div className="mt-3 flex items-start gap-3">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#1e6f78] shadow-sm">
+                          <Icon name="pin" className="h-5 w-5" />
+                        </span>
+                        <div>
+                          <p className="text-base font-bold text-[#1a2732]">{unit.street}</p>
+                          <p className="text-sm text-[#2b4a48]">{unit.neighborhood}</p>
+                          <p className="text-sm text-[#2b4a48]">{unit.city}</p>
+                        </div>
                       </div>
+                      <a
+                        href={unit.whatsappHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-4 inline-flex w-full items-center justify-between rounded-2xl border border-[#1e6f78]/25 bg-white/90 px-4 py-2.5 text-sm font-semibold text-[#1a2732] transition hover:-translate-y-0.5 hover:border-[#1e6f78]/40 hover:bg-white"
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          <Icon name="whatsapp" className="h-5 w-5" />
+                          Falar com a unidade
+                        </span>
+                        <span>{unit.phoneDisplay}</span>
+                      </a>
                     </div>
-                  </div>
-                </div>
-                <div className="relative overflow-hidden rounded-3xl border border-[#f6a63b]/20 bg-gradient-to-br from-[#fff7ea] via-white to-white p-5 transition hover:-translate-y-1 hover:border-[#f6a63b]/35 hover:bg-white hover:shadow-[0_16px_35px_rgba(246,166,59,0.2)]">
-                  <div className="absolute -left-12 -bottom-12 h-28 w-28 rounded-full bg-[#f6a63b]/20 blur-2xl" />
-                  <div className="flex items-start gap-4">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#f6a63b] shadow-sm">
-                      <Icon name="clock" className="h-6 w-6" />
-                    </span>
-                    <div className="flex-1">
-                      <div className="text-base font-bold uppercase tracking-[0.3em] text-[#f6a63b]">Horários</div>
-                      <div className="mt-2 text-sm font-semibold text-[#2b4a48]">Segunda a sexta-feira</div>
-                      <div className="mt-3 space-y-2 text-sm text-[#2b4a48]">
-                        <div className="flex items-center justify-between rounded-2xl bg-white/85 px-3 py-2">
-                          <span className="font-semibold">Manhã</span>
-                          <span className="font-semibold text-[#1a2732]">08:00 – 12:00</span>
-                        </div>
-                        <div className="flex items-center justify-between rounded-2xl bg-white/85 px-3 py-2">
-                          <span className="font-semibold">Tarde</span>
-                          <span className="font-semibold text-[#1a2732]">14:00 – 18:00</span>
-                        </div>
+                  </article>
+                ))}
+              </div>
+
+              <div className="mt-4 rounded-3xl border border-[#f6a63b]/20 bg-gradient-to-br from-[#fff7ea] via-white to-white p-5 transition hover:-translate-y-0.5 hover:border-[#f6a63b]/35 hover:shadow-[0_14px_30px_rgba(246,166,59,0.18)]">
+                <div className="flex items-start gap-4">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#f6a63b] shadow-sm">
+                    <Icon name="clock" className="h-6 w-6" />
+                  </span>
+                  <div className="flex-1">
+                    <div className="text-xs font-bold uppercase tracking-[0.32em] text-[#f6a63b]">Horário de funcionamento</div>
+                    <div className="mt-2 text-sm font-semibold text-[#2b4a48]">Segunda a sexta-feira</div>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      <div className="flex items-center justify-between rounded-2xl bg-white/85 px-3 py-2 text-sm text-[#2b4a48]">
+                        <span className="font-semibold">Manhã</span>
+                        <span className="font-semibold text-[#1a2732]">08:00 – 12:00</span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-2xl bg-white/85 px-3 py-2 text-sm text-[#2b4a48]">
+                        <span className="font-semibold">Tarde</span>
+                        <span className="font-semibold text-[#1a2732]">14:00 – 18:00</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+
             <div className="group relative overflow-hidden rounded-3xl border border-white/70 bg-[#1e6f78] p-6 text-white shadow-[0_20px_45px_rgba(30,111,120,0.35)] transition hover:-translate-y-1 hover:bg-[#1a6670] hover:shadow-[0_26px_55px_rgba(30,111,120,0.45)]">
               <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/15 blur-2xl" />
               <div className="absolute -left-12 bottom-0 h-32 w-32 rounded-full bg-[#0f4f56]/40 blur-2xl" />
               <div className="relative z-10">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <div className="text-base font-bold uppercase tracking-[0.35em] text-white/70">Contato imediato</div>
-                    <h3 className="mt-3 font-[var(--font-display)] text-3xl font-extrabold">
-                      Estamos prontos para cuidar de você
-                    </h3>
-                  </div>
-                  <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-white/80">
-                    <span className="h-2 w-2 rounded-full bg-[#f6a63b]" />
-                    WhatsApp disponível
-                  </span>
-                </div>
+                <div className="text-base font-bold uppercase tracking-[0.35em] text-white/70">Atendimento imediato</div>
+                <h3 className="mt-3 font-[var(--font-display)] text-3xl font-extrabold">
+                  Fale com a unidade ideal para a sua necessidade
+                </h3>
                 <p className="mt-4 text-sm text-white/85">
-                  Fale conosco pelo WhatsApp e receba orientação sobre atendimentos, convênios e disponibilidade de horários.
+                  Nossos canais são dedicados por unidade para oferecer retorno ágil, informações precisas e o encaminhamento
+                  correto desde o primeiro contato.
                 </p>
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  {whatsappContacts.map((contact) => (
+
+                <div className="mt-6 space-y-3">
+                  {clinicUnits.map((unit) => (
                     <a
-                      key={contact.label}
-                      href={contact.href}
+                      key={`contact-${unit.id}`}
+                      href={unit.whatsappHref}
                       target="_blank"
                       rel="noreferrer"
-                      className="group flex items-center justify-between rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-white/20 hover:shadow-[0_12px_25px_rgba(0,0,0,0.15)]"
+                      className="group flex items-center justify-between rounded-2xl bg-white/10 px-4 py-3 transition hover:-translate-y-0.5 hover:bg-white/20 hover:shadow-[0_12px_25px_rgba(0,0,0,0.15)]"
                     >
-                      <span>{contact.label}</span>
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/75">{unit.name}</div>
+                        <div className="text-sm font-bold text-white">{unit.phoneDisplay}</div>
+                      </div>
                       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition group-hover:bg-white group-hover:text-[#1e6f78]">
                         <Icon name="whatsapp" className="h-5 w-5" />
                       </span>
                     </a>
                   ))}
                 </div>
+
                 <div className="mt-5 flex flex-wrap items-center gap-3">
                   <a
                     href="https://www.instagram.com/clinica_souluz"
@@ -629,6 +693,12 @@ export default function ClinicaSouLuzPage() {
                 </div>
               </div>
             </div>
+          </div>
+          <div id="agendamento" className="mt-8">
+            <AppointmentForm
+              specialists={services.map((service) => service.title)}
+              whatsappNumber={primaryWhatsappNumber}
+            />
           </div>
         </section>
       </main>
