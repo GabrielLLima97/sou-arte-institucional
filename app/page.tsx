@@ -197,7 +197,7 @@ export default function HomePage() {
 
     if (type === "servicos") {
       lines.push("Solicitação de serviços - Sou Arte em Cuidados");
-      addLine("Nome", getValue("Nome"));
+      addLine("Nome", getValue("full_name") || getValue("Nome"));
       addLine("Empresa/Instituição", getValue("Empresa ou Instituição"));
       addLine("E-mail", getValue("Email"));
       addLine("Telefone", getValue("Telefone"));
@@ -208,7 +208,7 @@ export default function HomePage() {
     }
 
     lines.push("Associação de profissionais - Sou Arte em Cuidados");
-    addLine("Nome", getValue("Nome"));
+    addLine("Nome", getValue("full_name") || getValue("Nome"));
     addLine("Profissão", getValue("Profissão"));
     addLine("Registro profissional", getValue("Registro profissional"));
     addLine("Telefone", getValue("Telefone"));
@@ -747,9 +747,9 @@ export default function HomePage() {
                         <label className="text-sm font-semibold text-[#2f4050]">
                           Nome completo
                           <input
-                            name="Nome"
+                            name="full_name"
                             type="text"
-                            autoComplete="name"
+                            autoComplete="section-servicos name"
                             placeholder="Seu nome"
                             required
                             className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/80 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
@@ -881,9 +881,9 @@ export default function HomePage() {
                         <label className="text-sm font-semibold text-[#2f4050]">
                           Nome completo
                           <input
-                            name="Nome"
+                            name="full_name"
                             type="text"
-                            autoComplete="name"
+                            autoComplete="section-associados name"
                             placeholder="Seu nome"
                             required
                             className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/80 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
