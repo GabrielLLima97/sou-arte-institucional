@@ -236,6 +236,23 @@ export default function HomePage() {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
+  const handleEmailSubmit = (type: "servicos" | "associados") => {
+    const form = type === "servicos" ? servicesFormRef.current : associatesFormRef.current;
+    if (!form) {
+      return;
+    }
+
+    if (!form.reportValidity()) {
+      return;
+    }
+
+    const data = new FormData(form);
+    const subject = type === "servicos" ? "Contato - Serviços" : "Contato - Associados";
+    const body = buildWhatsAppMessage(type, data);
+    const mailtoUrl = `mailto:contato@souarteemcuidados.com.br?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+  };
+
   return (
     <main className="bg-[#f6f1e8] text-[#1a2732]">
       <PublicHeader />
@@ -706,9 +723,11 @@ export default function HomePage() {
                     <form
                       id="form-servicos"
                       ref={servicesFormRef}
-                      action="mailto:contato@souarteemcuidados.com.br?subject=Contato%20-%20Servi%C3%A7os"
-                      method="post"
-                      encType="text/plain"
+                      autoComplete="on"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        handleEmailSubmit("servicos");
+                      }}
                       className="space-y-4"
                     >
                       <input type="hidden" name="Tipo de contato" value="Contratação de serviços" />
@@ -730,6 +749,7 @@ export default function HomePage() {
                           <input
                             name="Nome"
                             type="text"
+                            autoComplete="name"
                             placeholder="Seu nome"
                             required
                             className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/80 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
@@ -740,6 +760,7 @@ export default function HomePage() {
                           <input
                             name="Empresa ou Instituição"
                             type="text"
+                            autoComplete="organization"
                             placeholder="Hospital, clínica ou associação"
                             required
                             className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/80 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
@@ -750,6 +771,7 @@ export default function HomePage() {
                           <input
                             name="Email"
                             type="email"
+                            autoComplete="email"
                             placeholder="você@email.com"
                             required
                             className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/80 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
@@ -760,6 +782,7 @@ export default function HomePage() {
                           <input
                             name="Telefone"
                             type="tel"
+                            autoComplete="tel"
                             placeholder="(69) 99922-0012"
                             required
                             className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/80 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
@@ -788,6 +811,7 @@ export default function HomePage() {
                           <input
                             name="Cidade"
                             type="text"
+                            autoComplete="address-level2"
                             placeholder="Cidade, Estado"
                             className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/80 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
                           />
@@ -833,9 +857,11 @@ export default function HomePage() {
                     <form
                       id="form-associados"
                       ref={associatesFormRef}
-                      action="mailto:contato@souarteemcuidados.com.br?subject=Contato%20-%20Associados"
-                      method="post"
-                      encType="text/plain"
+                      autoComplete="on"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        handleEmailSubmit("associados");
+                      }}
                       className="space-y-4"
                     >
                       <input type="hidden" name="Tipo de contato" value="Associação de profissionais" />
@@ -857,6 +883,7 @@ export default function HomePage() {
                           <input
                             name="Nome"
                             type="text"
+                            autoComplete="name"
                             placeholder="Seu nome"
                             required
                             className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/80 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
@@ -892,6 +919,7 @@ export default function HomePage() {
                           <input
                             name="Telefone"
                             type="tel"
+                            autoComplete="tel"
                             placeholder="(69) 99922-0012"
                             required
                             className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/80 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
@@ -905,6 +933,7 @@ export default function HomePage() {
                           <input
                             name="Email"
                             type="email"
+                            autoComplete="email"
                             placeholder="você@email.com"
                             required
                             className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/80 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
@@ -915,6 +944,7 @@ export default function HomePage() {
                           <input
                             name="Cidade"
                             type="text"
+                            autoComplete="address-level2"
                             placeholder="Cidade, Estado"
                             className="mt-2 w-full rounded-2xl border border-[#e5d6c5] bg-white/80 px-4 py-3 text-sm focus:border-[#1f6dd1] focus:outline-none focus:ring-2 focus:ring-[#1f6dd1]/20"
                           />
