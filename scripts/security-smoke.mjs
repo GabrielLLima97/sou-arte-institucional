@@ -7,7 +7,7 @@ async function request(path, host, extra = {}) {
   const url = new URL(path, base);
   return new Promise((resolve, reject) => {
     const client = url.protocol === "https:" ? https : http;
-    const req = client.get(url, { headers: { Host: host, ...extra } }, (response) => {
+    const req = client.get(url, { servername: url.hostname, headers: { Host: host, ...extra } }, (response) => {
       let body = "";
       response.setEncoding("utf8");
       response.on("data", (chunk) => { body += chunk; });
