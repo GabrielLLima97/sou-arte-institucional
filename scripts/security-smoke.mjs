@@ -39,7 +39,7 @@ for (const path of ["/portal-admin/login", "/portal-socio/login"]) {
     for (const extra of [{}, { "x-middleware-subrequest": "middleware:middleware:middleware:middleware:middleware" }]) {
       const response = await request(path, host, extra);
       assert.equal(response.status, 307, `${host}: middleware must not be bypassed`);
-      assert.equal(new URL(response.headers.get("location")).pathname, "/");
+      assert.equal(new URL(response.headers.get("location"), base).pathname, "/");
     }
   }
 }
