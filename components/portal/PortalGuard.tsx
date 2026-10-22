@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type JSX } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "../../lib/api";
 import type { User, UserRole } from "../../lib/types";

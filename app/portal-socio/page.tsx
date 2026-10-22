@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type JSX } from "react";
 import { PortalShell } from "../../components/portal/PortalShell";
 import { PortalCard } from "../../components/portal/PortalCard";
 import { Modal } from "../../components/portal/Modal";

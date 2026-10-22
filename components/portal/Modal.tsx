@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, type JSX } from "react";
 
 type ModalIconName = "announcement" | "course" | "link" | "edit" | "benefit" | "info";
 type ModalTone = "primary" | "coral";

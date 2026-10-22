@@ -1,252 +1,407 @@
 import type { Metadata } from "next";
-import { Icon, type IconName } from "../../components/Icons";
+import Image from "next/image";
+import { ArrowDown, ArrowUp, ArrowUpRight, Check, Plus } from "lucide-react";
+import { AssessoriaHeader } from "../../components/assessoria/Header";
+import { ServiceExplorer } from "../../components/assessoria/ServiceExplorer";
+import { AssessoriaContact } from "../../components/assessoria/ContactForm";
+import {
+  assessoria,
+  assessoriaContactHref,
+  assessoriaFaqs,
+  assessoriaServices,
+} from "../../lib/assessoria";
+import styles from "../../components/assessoria/assessoria.module.css";
+
+const description =
+  "Gestão, auditoria, faturamento e credenciamento em saúde. A Sou Luz Assessoria ajuda clínicas, consultórios e instituições a organizar sua operação.";
 
 export const metadata: Metadata = {
-  title: "Sou Luz Assessoria",
-  description:
-    "Gestão, auditoria e consultoria em saúde para clínicas e empreendimentos que buscam eficiência, conformidade e resultados.",
-  icons: {
-    icon: "/souluz/icone.png",
+  title: { absolute: "Sou Luz Assessoria | Gestão e consultoria em saúde" },
+  description,
+  alternates: { canonical: assessoria.url },
+  icons: { icon: "/souluz/icone.png" },
+  openGraph: {
+    title: "Sou Luz Assessoria | Gestão e consultoria em saúde",
+    description,
+    url: assessoria.url,
+    images: [
+      {
+        url: `${assessoria.url}/souluz/logo-retangular.png`,
+        alt: assessoria.name,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: assessoria.name,
+    description,
+    images: [`${assessoria.url}/souluz/logo-retangular.png`],
   },
 };
 
-const services: { title: string; description: string; icon: IconName }[] = [
+const steps = [
   {
-    title: "Gestão em Saúde",
-    description: "Estratégia, indicadores e processos para elevar performance clínica.",
-    icon: "briefcase",
+    title: "Escutar e entender",
+    phase: "Diagnóstico",
+    text: "Conhecemos a realidade da sua instituição, seus processos e os desafios que merecem atenção.",
   },
   {
-    title: "Assessoria em Saúde",
-    description: "Suporte especializado para decisões e operação do dia a dia.",
-    icon: "heart",
+    title: "Definir o caminho",
+    phase: "Plano de ação",
+    text: "Transformamos a análise em prioridades, metas e ações alinhadas ao momento do seu negócio.",
   },
   {
-    title: "Credenciamento Médico",
-    description: "Consultoria completa para credenciamento e expansão assistencial.",
-    icon: "network",
+    title: "Colocar em prática",
+    phase: "Implementação",
+    text: "Acompanhamos os ajustes na operação e o alinhamento da equipe com os novos processos.",
   },
   {
-    title: "Faturamento Médico/Hospitalar",
-    description: "Organização do fluxo financeiro com foco em previsibilidade.",
-    icon: "calendar",
-  },
-  {
-    title: "Auditoria em Saúde",
-    description: "Conformidade, redução de glosas e segurança nos processos.",
-    icon: "check",
+    title: "Acompanhar a evolução",
+    phase: "Indicadores",
+    text: "Monitoramos os resultados para orientar decisões e manter a melhoria como parte da rotina.",
   },
 ];
-
-const outcomes = [
-  "Padronização de processos e melhoria contínua",
-  "Redução de perdas financeiras e glosas",
-  "Apoio estratégico para tomada de decisão",
-  "Equipe alinhada e treinada para resultados sustentáveis",
-];
-
-const whatsappHref = "https://wa.me/5569999220012";
 
 export default function SouLuzAssessoriaPage() {
-  const assessoriaStructuredData = {
+  const structuredData = {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
-    name: "Sou Luz Assessoria",
-    description:
-      "Gestão, auditoria e consultoria em saúde para clínicas, consultórios e instituições que buscam eficiência e resultados.",
-    url: "https://souluzassessoria.com.br",
-    image: "https://souluzassessoria.com.br/souluz/logo-retangular.png",
-    telephone: "+55-69-99922-0012",
+    name: assessoria.name,
+    description,
+    url: assessoria.url,
+    image: `${assessoria.url}/souluz/logo-retangular.png`,
+    telephone: assessoria.telephone,
     areaServed: "BR",
-    serviceType: [
-      "Gestão em Saúde",
-      "Assessoria em Saúde",
-      "Consultoria em Credenciamento Médico",
-      "Faturamento Médico/Hospitalar",
-      "Auditoria em Saúde",
-    ],
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Soluções em saúde",
+      itemListElement: assessoriaServices.map((service) => ({
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: service.title,
+          description: service.description,
+        },
+      })),
+    },
   };
 
   return (
-    <div className="bg-[#f6f1e8] text-[#0f2c4c]">
-      <div className="fixed inset-x-0 top-0 z-40 border-b border-[#1a5fb8] bg-[#1f6dd1] shadow-[0_12px_30px_rgba(31,109,209,0.45)]">
-        <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-6 px-3 py-3 sm:px-5 lg:px-8">
-          <a href="#inicio" className="flex items-center">
-            <img
-              src="/souluz/logo-retangular.png"
-              alt="Sou Luz Assessoria"
-              className="h-16 w-auto drop-shadow-[0_6px_16px_rgba(0,0,0,0.35)] sm:h-20"
-            />
-          </a>
-          <nav className="hidden items-center gap-5 text-sm font-semibold uppercase tracking-[0.25em] text-white/90 lg:flex">
-            <a href="#servicos" className="transition hover:text-white">
-              Serviços
+    <div className={styles.site}>
+      <a className={styles.skipLink} href="#conteudo">
+        Pular para o conteúdo
+      </a>
+      <AssessoriaHeader />
+      <main id="conteudo">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+          }}
+        />
+        <section
+          className={styles.hero}
+          id="inicio"
+          aria-labelledby="hero-title"
+        >
+          <Image
+            className={styles.heroImage}
+            src="/souluz/assessoria-gestao.webp"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            quality={85}
+          />
+          <div className={styles.heroShade} />
+          <div className={`${styles.container} ${styles.heroContent}`}>
+            <p className={styles.heroEyebrow}>
+              <span />
+              Um olhar estratégico para a saúde
+            </p>
+            <h1 id="hero-title">
+              Sou Luz
+              <br />
+              <em>Assessoria.</em>
+            </h1>
+            <p className={styles.heroSubtitle}>
+              Você cuida de pessoas.
+              <br />
+              Nós ajudamos a cuidar da sua gestão.
+            </p>
+            <p className={styles.heroDescription}>
+              Gestão, auditoria e consultoria para dar mais clareza às decisões
+              e mais consistência à sua operação.
+            </p>
+            <a
+              href={assessoriaContactHref()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${styles.button} ${styles.buttonHero}`}
+            >
+              Converse com um especialista{" "}
+              <ArrowUpRight size={20} aria-hidden="true" />
             </a>
-            <a href="#metodo" className="transition hover:text-white">
-              Método
-            </a>
-            <a href="#contato" className="transition hover:text-white">
-              Contato
-            </a>
-          </nav>
-          <a
-            href={whatsappHref}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-[#0f2c4c]/30 px-4 py-2 text-sm font-semibold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-[#0f2c4c]/45"
-          >
-            <Icon name="whatsapp" className="h-5 w-5" />
-            WhatsApp
-          </a>
-        </div>
-      </div>
-
-      <main className="pt-20">
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(assessoriaStructuredData) }} />
-        <section id="inicio" className="relative overflow-hidden">
-          <div className="absolute -left-20 top-16 h-56 w-56 rounded-full bg-[#1f6dd1]/20 blur-3xl" />
-          <div className="absolute right-10 top-0 h-72 w-72 rounded-full bg-[#1f6dd1]/15 blur-3xl" />
-          <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-10 px-3 py-10 sm:px-5 lg:flex-row lg:items-center lg:px-8">
-            <div className="max-w-2xl">
-              <div className="text-base font-bold uppercase tracking-[0.4em] text-[#1f6dd1]">
-                Uma luz para o seu empreendimento
-              </div>
-              <h1 className="mt-4 font-[var(--font-display)] text-4xl font-extrabold text-[#0f2c4c] sm:text-5xl">
-                Sou Luz Assessoria
-              </h1>
-              <p className="mt-4 text-lg text-[#2b3f5a]">
-                Gestão e auditoria em saúde para clínicas, consultórios e instituições que buscam eficiência, conformidade e
-                resultados sustentáveis.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#1f6dd1] px-5 py-3 text-base font-bold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-[#1659ae]"
-                >
-                  <Icon name="whatsapp" className="h-6 w-6" />
-                  Falar com um especialista
-                </a>
-                <a
-                  href="#servicos"
-                  className="inline-flex items-center gap-2 rounded-full border border-[#1f6dd1]/30 bg-white px-5 py-3 text-base font-bold uppercase tracking-[0.25em] text-[#1f6dd1] transition hover:-translate-y-0.5 hover:border-[#1f6dd1]"
-                >
-                  Ver soluções
-                </a>
-              </div>
-            </div>
-            <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white/80 p-6 shadow-[0_20px_60px_rgba(15,44,76,0.18)] transition hover:-translate-y-1 hover:border-[#1f6dd1]/35 hover:bg-white hover:shadow-[0_24px_65px_rgba(15,44,76,0.24)]">
-              <div className="text-base font-bold uppercase tracking-[0.3em] text-[#1f6dd1]">Foco em resultados</div>
-              <h2 className="mt-3 font-[var(--font-display)] text-2xl font-extrabold text-[#0f2c4c]">Gestão que transforma a operação</h2>
-              <p className="mt-3 text-sm text-[#2b3f5a]">
-                Diagnóstico, plano de ação e acompanhamento próximo para evoluir processos e ampliar a performance financeira.
-              </p>
-              <ul className="mt-5 space-y-3 text-sm text-[#2b3f5a]">
-                {outcomes.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <span className="mt-1 h-6 w-6 rounded-full bg-[#1f6dd1]/15 text-[#1f6dd1]">
-                      <Icon name="check" className="m-1.5 h-3 w-3" />
-                    </span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <section id="servicos" className="mx-auto w-full max-w-screen-2xl px-3 py-10 sm:px-5 lg:px-8">
-          <div className="text-base font-bold uppercase tracking-[0.35em] text-[#1f6dd1]">Nossos serviços</div>
-          <h2 className="mt-3 font-[var(--font-display)] text-3xl font-extrabold text-[#0f2c4c] sm:text-4xl">
-            Soluções completas para a sua operação
-          </h2>
-          <p className="mt-4 max-w-3xl text-[#2b3f5a]">
-            Atuação estratégica e técnica para garantir processos seguros, conformidade regulatória e crescimento sustentável.
-          </p>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {services.map((service) => (
-              <div
-                key={service.title}
-                className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-[0_16px_40px_rgba(15,44,76,0.12)] transition hover:-translate-y-1 hover:border-[#1f6dd1]/35 hover:bg-white hover:shadow-[0_20px_45px_rgba(15,44,76,0.18)]"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#1f6dd1]/15 text-[#1f6dd1]">
-                  <Icon name={service.icon} className="h-6 w-6" />
-                </div>
-                <h3 className="mt-4 text-lg font-bold text-[#0f2c4c]">{service.title}</h3>
-                <p className="mt-2 text-sm text-[#2b3f5a]">{service.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="metodo" className="mx-auto w-full max-w-screen-2xl px-3 py-10 sm:px-5 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-            <div>
-              <div className="text-base font-bold uppercase tracking-[0.35em] text-[#1f6dd1]">Método de trabalho</div>
-              <h2 className="mt-3 font-[var(--font-display)] text-3xl font-extrabold text-[#0f2c4c] sm:text-4xl">
-                Consultoria com início, meio e resultado
-              </h2>
-              <p className="mt-4 text-[#2b3f5a]">
-                Atuamos de forma estruturada para garantir que cada etapa gere clareza, controle e evolução consistente.
-              </p>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                {[
-                  { title: "Diagnóstico", text: "Análise de processos e indicadores." },
-                  { title: "Plano de ação", text: "Definição de metas e prioridades." },
-                  { title: "Implementação", text: "Ajustes operacionais com acompanhamento." },
-                  { title: "Indicadores", text: "Monitoramento contínuo de resultados." },
-                ].map((step) => (
-                  <div
-                    key={step.title}
-                    className="rounded-2xl border border-[#1f6dd1]/15 bg-white/80 p-4 transition hover:-translate-y-1 hover:border-[#1f6dd1]/30 hover:bg-white hover:shadow-[0_16px_35px_rgba(31,109,209,0.18)]"
-                  >
-                    <div className="text-base font-bold uppercase tracking-[0.3em] text-[#1f6dd1]">{step.title}</div>
-                    <p className="mt-2 text-sm text-[#2b3f5a]">{step.text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#0f2c4c] via-[#153b69] to-[#0f2c4c] p-6 text-white shadow-[0_20px_45px_rgba(15,44,76,0.35)] transition hover:-translate-y-1 hover:shadow-[0_26px_55px_rgba(15,44,76,0.45)]">
-              <div className="text-base font-bold uppercase tracking-[0.35em] text-white/60">Contato rápido</div>
-              <h3 className="mt-3 font-[var(--font-display)] text-3xl font-extrabold">Vamos estruturar sua gestão</h3>
-              <p className="mt-4 text-sm text-white/85">
-                Fale com a nossa equipe e receba uma proposta alinhada ao momento da sua instituição.
-              </p>
-              <a
-                href={whatsappHref}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-5 py-3 text-base font-bold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-white/25"
-              >
-                <Icon name="whatsapp" className="h-6 w-6" />
-                Falar no WhatsApp
+            <div className={styles.heroBottom}>
+              <span>Estratégia. Proximidade. Evolução.</span>
+              <a href="#sobre">
+                Conheça a Sou Luz <ArrowDown size={16} aria-hidden="true" />
               </a>
             </div>
           </div>
         </section>
 
-        <section id="contato" className="mx-auto w-full max-w-screen-2xl px-3 pb-12 sm:px-5 lg:px-8">
-          <div className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-[0_16px_40px_rgba(15,44,76,0.12)] transition hover:-translate-y-1 hover:border-[#1f6dd1]/35 hover:bg-white hover:shadow-[0_20px_45px_rgba(15,44,76,0.18)]">
-            <div className="text-base font-bold uppercase tracking-[0.35em] text-[#1f6dd1]">Contato</div>
-            <h2 className="mt-3 font-[var(--font-display)] text-3xl font-extrabold text-[#0f2c4c] sm:text-4xl">
-              Direcione seu projeto com confiança
-            </h2>
-            <p className="mt-4 text-[#2b3f5a]">
-              Atendimento direto pelo WhatsApp para diagnósticos, propostas e agendas.
+        <div className={styles.audienceBand}>
+          <div className={`${styles.container} ${styles.audienceInner}`}>
+            <p>
+              Ao lado de quem
+              <br />
+              <strong>faz a saúde acontecer.</strong>
             </p>
+            <span>Clínicas</span>
+            <span>Consultórios</span>
+            <span>Instituições de saúde</span>
+          </div>
+        </div>
+
+        <section
+          id="sobre"
+          className={`${styles.container} ${styles.about}`}
+          aria-labelledby="about-title"
+        >
+          <div className={styles.sectionLabel}>
+            <span>01 / A Sou Luz</span>
+            <span className={styles.labelLine} />
+          </div>
+          <div className={styles.aboutGrid}>
+            <h2 id="about-title">
+              Uma boa gestão
+              <br />
+              também é uma
+              <br />
+              <em>forma de cuidar.</em>
+            </h2>
+            <div className={styles.aboutText}>
+              <p className={styles.introText}>
+                Por trás de cada atendimento, existe uma operação que precisa
+                funcionar bem.
+              </p>
+              <p>
+                Processos, equipes, faturamento e decisões fazem parte dessa
+                realidade. A Sou Luz conecta essas frentes com assessoria
+                técnica e estratégica, respeitando o momento e as necessidades
+                de cada empreendimento.
+              </p>
+              <p>
+                Nosso trabalho começa pela escuta e se desenvolve com
+                planejamento, implementação e acompanhamento próximo.
+              </p>
+              <a href="#metodo" className={styles.textLink}>
+                Conheça nossa abordagem{" "}
+                <ArrowUpRight size={18} aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+          <div className={styles.principles}>
+            <p>
+              <Check size={18} aria-hidden="true" />
+              Visão integrada da operação
+            </p>
+            <p>
+              <Check size={18} aria-hidden="true" />
+              Atenção à realidade do seu negócio
+            </p>
+            <p>
+              <Check size={18} aria-hidden="true" />
+              Acompanhamento em cada etapa
+            </p>
+          </div>
+        </section>
+
+        <section
+          id="servicos"
+          className={styles.servicesSection}
+          aria-labelledby="services-title"
+        >
+          <div className={`${styles.container} ${styles.servicesGrid}`}>
+            <div className={styles.servicesIntro}>
+              <p className={styles.sectionLabel}>02 / Nossas soluções</p>
+              <h2 id="services-title">
+                O cuidado com <br />a sua operação, <br />
+                <em>em cada detalhe.</em>
+              </h2>
+              <p>
+                Da estratégia à rotina. Encontre o apoio que faz sentido para o
+                seu momento.
+              </p>
+              <a href="#contato" className={styles.textLink}>
+                Encontre sua solução{" "}
+                <ArrowUpRight size={18} aria-hidden="true" />
+              </a>
+              <div className={styles.serviceSignature}>
+                <img
+                  src="/souluz/icone.png"
+                  alt=""
+                  width="74"
+                  height="74"
+                  loading="lazy"
+                />
+                <span>
+                  Uma luz para o<br />
+                  seu empreendimento.
+                </span>
+              </div>
+            </div>
+            <ServiceExplorer />
+          </div>
+        </section>
+
+        <section
+          id="metodo"
+          className={`${styles.container} ${styles.method}`}
+          aria-labelledby="method-title"
+        >
+          <div className={styles.sectionLabel}>
+            <span>03 / Nossa abordagem</span>
+            <span className={styles.labelLine} />
+          </div>
+          <div className={styles.sectionHeading}>
+            <h2 id="method-title">
+              Direção clara.
+              <br />
+              <em>Presença em cada etapa.</em>
+            </h2>
+            <p>
+              Um processo estruturado, com espaço para ouvir, ajustar e evoluir
+              junto com a sua instituição.
+            </p>
+          </div>
+          <ol className={styles.steps}>
+            {steps.map((step, index) => (
+              <li key={step.phase}>
+                <div className={styles.stepTop}>
+                  <span>0{index + 1}</span>
+                  <ArrowUpRight size={20} aria-hidden="true" />
+                </div>
+                <span className={styles.stepPhase}>{step.phase}</span>
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </li>
+            ))}
+          </ol>
+          <div className={styles.methodClosing}>
+            <span>O ponto de partida é a sua realidade.</span>
             <a
-              href={whatsappHref}
+              href={assessoriaContactHref()}
               target="_blank"
-              rel="noreferrer"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#1f6dd1] px-6 py-3 text-base font-bold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:bg-[#1659ae]"
+              rel="noopener noreferrer"
+              className={styles.textLink}
             >
-              <Icon name="whatsapp" className="h-6 w-6" />
-              +55 69 99922-0012
+              Vamos entender o seu momento{" "}
+              <ArrowUpRight size={18} aria-hidden="true" />
             </a>
           </div>
         </section>
+
+        <section className={styles.faqSection} aria-labelledby="faq-title">
+          <div className={`${styles.container} ${styles.faqGrid}`}>
+            <div>
+              <p className={styles.sectionLabel}>Antes de começarmos</p>
+              <h2 id="faq-title">
+                Uma conversa
+                <br />
+                <em>com clareza.</em>
+              </h2>
+              <p className={styles.faqIntro}>
+                Algumas respostas para você conhecer melhor o nosso trabalho.
+              </p>
+            </div>
+            <div className={styles.faqs}>
+              {assessoriaFaqs.map((faq) => (
+                <details key={faq.question} className={styles.faq}>
+                  <summary>
+                    {faq.question}
+                    <Plus size={19} aria-hidden="true" />
+                  </summary>
+                  <p>{faq.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="contato"
+          className={styles.contact}
+          aria-labelledby="contact-title"
+        >
+          <div className={`${styles.container} ${styles.contactGrid}`}>
+            <div className={styles.contactIntro}>
+              <p className={styles.sectionLabel}>04 / Vamos conversar</p>
+              <h2 id="contact-title">
+                Seu próximo passo
+                <br />
+                merece uma
+                <br />
+                <em>direção clara.</em>
+              </h2>
+              <p>
+                Compartilhe o momento da sua instituição.
+                <br />
+                Vamos pensar no caminho juntos.
+              </p>
+              <a
+                className={styles.contactPhone}
+                href={`tel:${assessoria.telephone}`}
+              >
+                {assessoria.phone}
+                <ArrowUpRight size={19} aria-hidden="true" />
+              </a>
+            </div>
+            <AssessoriaContact />
+          </div>
+        </section>
       </main>
+      <footer className={styles.footer}>
+        <div className={styles.container}>
+          <div className={styles.footerTop}>
+            <a
+              href="#inicio"
+              className={styles.brand}
+              aria-label="Sou Luz Assessoria, início"
+            >
+              <img
+                src="/souluz/logo-retangular.png"
+                alt="Sou Luz"
+                width="1700"
+                height="500"
+                loading="lazy"
+              />
+              <span>Assessoria em saúde</span>
+            </a>
+            <p>Uma luz para o seu empreendimento.</p>
+            <a
+              href="#inicio"
+              className={styles.backTop}
+              aria-label="Voltar ao início"
+              title="Voltar ao início"
+            >
+              <ArrowUp size={20} aria-hidden="true" />
+            </a>
+          </div>
+          <div className={styles.footerBottom}>
+            <span>
+              © {new Date().getFullYear()} Sou Luz Assessoria. Todos os
+              direitos reservados.
+            </span>
+            <nav aria-label="Navegação do rodapé">
+              <a href="#servicos">Soluções</a>
+              <a href="#metodo">Nossa abordagem</a>
+              <a href="#contato">Contato</a>
+            </nav>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

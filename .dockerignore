@@ -1,5 +1,12 @@
 node_modules*
 .next
 .DS_Store
+**/._*
 npm-debug.log
 nginx/certbot
+.git
+backend
+nginx
+*.pem
+.env*
+docker-compose*.yml

@@ -1,5 +1,7 @@
 "use client";
 
+import type { JSX } from "react";
+
 import { PortalShell } from "../../components/portal/PortalShell";
 import { PortalCard } from "../../components/portal/PortalCard";
 import { Icon } from "../../components/Icons";

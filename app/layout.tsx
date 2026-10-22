@@ -4,8 +4,8 @@ import { headers } from "next/headers";
 import { ReactNode } from "react";
 import { resolveSiteByHost, siteConfigs } from "../lib/site-config";
 
-export function generateMetadata(): Metadata {
-  const host = headers().get("host") ?? "souarteemcuidados.com.br";
+export async function generateMetadata(): Promise<Metadata> {
+  const host = (await headers()).get("host") ?? "souarteemcuidados.com.br";
   const hostname = host.split(":")[0];
   const protocol = hostname.includes("localhost") ? "http" : "https";
   const siteUrl = `${protocol}://${hostname}`;

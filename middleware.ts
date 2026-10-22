@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   if (portalPaths.some((path) => pathname.startsWith(path))) {
-    if (!hostname.endsWith("souarteemcuidados.com.br") && hostname !== "localhost") {
+    if (!["souarteemcuidados.com.br", "www.souarteemcuidados.com.br", "localhost"].includes(hostname)) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
